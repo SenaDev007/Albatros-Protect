@@ -1,0 +1,324 @@
+// Agent Albatros — Schéma de données pilote
+// Aligné sur la spécification technique §5.1 (adapté SQLite : énumérations en String)
+// Principe : identifiant opaque de service par appareil ; IMEI/serial = données
+// déclaratives chiffrées/masquées, jamais exposées en clair dans les journaux.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(cuid())
+  phone      String?   @unique
+  email      String?   @unique
+  fullName   String
+  role       String    @default("citizen") // citizen | support | admin
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  sessions       Session[]
+  devices        Device[]
+  incidents      Incident[]
+  circles        Circle[]
+  memberships    CircleMembership[]
+  consents       ConsentRecord[]
+  shareGrants    ShareGrant[]
+  privacyRequests PrivacyRequest[]
+  documents      DocumentEntity[]
+  auditEvents    AuditEvent[]
+}
+
+model OtpCode {
+  id         String    @id @default(cuid())
+  identifier String
+  code       String
+  purpose    String    @default("login") // login | step_up
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([identifier, purpose])
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  @@index([userId])
+}
+
+model Device {
+  id                  String   @id @default(cuid())
+  deviceId            String   @unique // identifiant opaque de service (ALB-XXXXXX)
+  ownerId             String
+  owner               User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  category            String // smartphone | tablet | laptop | desktop
+  brand               String
+  model               String
+  color               String?
+  osName              String?
+  osVersion           String?
+  status              String   @default("active") // active | transferred | removed
+  enrolled            Boolean  @default(false)
+  locationEnabled     Boolean  @default(false)
+  bleEnabled          Boolean  @default(false)
+  notificationsEnabled Boolean @default(false)
+  batteryOptimized    Boolean  @default(false)
+  proofUploaded       Boolean  @default(false)
+  identifiersComplete Boolean  @default(false)
+  lastTransmissionAt  DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  identifiers       DeviceIdentifier[]
+  consents          ConsentRecord[]
+  locationObservations LocationObservation[]
+  radioObservations RadioObservation[]
+  bleEncounters     BleEncounter[]
+  incidents         Incident[]
+  documents         DocumentEntity[]
+  shareGrants       ShareGrant[]
+}
+
+model DeviceIdentifier {
+  id           String  @id @default(cuid())
+  deviceId     String
+  device       Device  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  type         String // imei | serial | purchase_ref | declared
+  value        String // stocké chiffré au repos en production ; masqué dans l'UI
+  valueHmac    String // empreinte pour recherche exacte sans exposition
+  verified     Boolean @default(false)
+  proofDocId   String?
+  createdAt    DateTime @default(now())
+
+  @@index([deviceId])
+}
+
+model ConsentRecord {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId    String?
+  device      Device?   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  purpose     String // location | ble_detection | data_processing | partner_exchange
+  permission  String
+  textVersion String
+  granted     Boolean   @default(true)
+  grantedAt   DateTime  @default(now())
+  revokedAt   DateTime?
+
+  @@index([userId])
+}
+
+model LocationObservation {
+  id               String   @id @default(cuid())
+  deviceId         String
+  device           Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  incidentId       String?
+  incident         Incident? @relation("IncidentObservations", fields: [incidentId], references: [id], onDelete: SetNull)
+  source           String // native_location | google_geolocation | ble_witness | operator_authorized
+  latitude         Float
+  longitude        Float
+  accuracyRadiusM  Float? // null = précision inconnue (jamais fabriquée)
+  capturedAt       DateTime
+  receivedAt       DateTime @default(now())
+  mode             String   @default("normal") // normal | incident
+  quality          String   @default("estimated") // precise | estimated | approximate | unknown
+  note             String?
+  bleEncounterId   String?
+  radioObsId       String?
+
+  @@index([deviceId, capturedAt])
+  @@index([incidentId])
+}
+
+model RadioObservation {
+  id            String    @id @default(cuid())
+  deviceId      String
+  device        Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  payloadSummary String   // résumé (nombre de BSSID), jamais les valeurs brutes conservées
+  consented     Boolean   @default(true)
+  capturedAt    DateTime
+  processedAt   DateTime?
+  purgedAt      DateTime? // politique de purge appliquée après traitement
+  ttlExpiresAt  DateTime
+
+  @@index([deviceId])
+}
+
+model BleEncounter {
+  id                  String   @id @default(cuid())
+  targetDeviceId      String
+  targetDevice        Device   @relation(fields: [targetDeviceId], references: [id], onDelete: Cascade)
+  tempIdentifier      String // identifiant rotatif — n'expose ni compte ni IMEI
+  rssi                Int?
+  detectedAt          DateTime
+  detectorPositionLat Float
+  detectorPositionLng Float
+  detectorAccuracyM   Float?
+  validated           Boolean  @default(true)
+  transmissionStatus  String   @default("delivered") // delivered | queued | failed
+
+  @@index([targetDeviceId, detectedAt])
+}
+
+model Incident {
+  id             String    @id @default(cuid())
+  refNumber      String    @unique // ALB-INC-2026-XXXX
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId       String
+  device         Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  type           String // loss | theft
+  status         String    @default("submitted") // draft|submitted|verification_required|ready_to_transmit|transmitted|processing|response_received|closed|disputed
+  occurredAt     DateTime
+  declaredAt     DateTime  @default(now())
+  locationText   String
+  latitude       Float?
+  longitude      Float?
+  description    String?
+  simPhone       String?
+  policeReportRef String?
+  closedAt       DateTime?
+  closeReason    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  events           IncidentEvent[]
+  partnerRequests  PartnerRequest[]
+  observations     LocationObservation[] @relation("IncidentObservations")
+  documents        DocumentEntity[]
+  shareGrants      ShareGrant[]
+}
+
+model IncidentEvent {
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  type       String // created | status_change | note | verification | observation | partner | closure
+  label      String
+  detail     String?
+  actorRole  String   @default("owner") // owner | support | partner | system
+  createdAt  DateTime @default(now())
+
+  @@index([incidentId])
+}
+
+model PartnerRequest {
+  id          String   @id @default(cuid())
+  incidentId  String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  partnerType String // operator | authority
+  partnerName String // MTN Bénin | Moov Africa Bénin | Celtiis | Police | ...
+  requestType String // sim_suspension | imei_block | network_location
+  base        String  @default("declaration_du_proprietaire")
+  motive      String
+  status      String  @default("inactive") // inactive | draft | transmitted | answered | refused
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([incidentId])
+}
+
+model Circle {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+
+  members    CircleMembership[]
+  shareGrants ShareGrant[]
+}
+
+model CircleMembership {
+  id         String   @id @default(cuid())
+  circleId   String
+  circle     Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inviteName String
+  inviteContact String
+  status     String   @default("invited") // invited | active | left | blocked
+  joinedAt   DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([circleId])
+}
+
+model ShareGrant {
+  id          String    @id @default(cuid())
+  circleId    String
+  circle      Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId    String?
+  device      Device?   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  incidentId  String?
+  incident    Incident? @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  dataShared  String    // alert | status | position
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([circleId])
+}
+
+model DocumentEntity {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId   String?
+  device     Device?   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  incidentId String?
+  incident   Incident? @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  name       String
+  type       String    @default("purchase_proof") // purchase_proof | police_report | other
+  storageKey String
+  sizeKb     Int       @default(0)
+  note       String?
+  uploadedAt DateTime  @default(now())
+  expiresAt  DateTime? // durée de conservation contrôlée
+
+  @@index([userId])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorRole  String
+  action     String
+  objectType String
+  objectId   String?
+  result     String   @default("success")
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model PrivacyRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // access | rectification | deletion | objection
+  details   String
+  status    String   @default("received") // received | processing | done
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
