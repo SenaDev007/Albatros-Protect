@@ -38,3 +38,23 @@ Stage Summary:
 - Portail web Albatros Protect conforme au document de conception, pilote Parakou, bi-modes vérifiés
 - Livrables download/ : 2 zips natifs + 4 captures + README
 - Compte démo +22997000001 (OTP à l'écran)
+
+---
+Task ID: 7
+Agent: main (Z.ai)
+Task: Préparer le projet au déploiement Vercel, commit et push vers github.com/SenaDev007/Albatros-Protect
+
+Work Log:
+- Analyse des contraintes Vercel : SQLite / FS lecture seule → bootstrap /tmp ; build plateforme exige output:"standalone" (conservé, Vercel l'ignore)
+- next.config.ts : ajout outputFileTracingIncludes ["/api/**/*": "./db/custom.db"] — vérifié dans route.js.nft.json (custom.db tracé)
+- package.json : build = "prisma generate && next build && cp standalone..." + postinstall "prisma generate"
+- src/lib/db.ts : resolveDatabaseUrl() — copie auto db/custom.db → /tmp/albatros.db sur Vercel (zéro config), URL externe prioritaire, logs prod error/warn seulement
+- Hygiène git : .env et .zscripts/dev.pid untrackés (git rm --cached), .gitignore durci (dev.pid, wal/shm, !.env.example), .env.example créé
+- README.md racine créé (structure repo, démarrage local, déploiement Vercel zéro-config, limites SQLite serverless, migration Turso/Neon/Supabase, API, apps mobiles)
+- Validation : bun run build OK (44 routes, build standalone complet), dev server local toujours 200 après build
+- Commit b34e79e + push -u origin main sur SenaDev007/Albatros-Protect (repo était vide), puis retrait du token de .git/config (URL propre)
+
+Stage Summary:
+- Repo GitHub https://github.com/SenaDev007/Albatros-Protect synchronisé (branche main, ~175 fichiers)
+- Projet Vercel-ready : import → déployer sans aucune variable d'environnement
+- Données de démo embarquées (compte +22997000001), persistance éphémère documentée avec chemin de migration production
