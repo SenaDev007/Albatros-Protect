@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
 import { api, ApiError } from "./api";
 import { useAlbatros } from "./store";
 import {
@@ -23,21 +24,25 @@ import {
 import { Eye, EyeOff, KeyRound, Loader2, ShieldCheck, Info } from "lucide-react";
 
 // ---------- Identité de marque ----------
+// Emblème officiel (albatros + bouclier GPS) — asset transparent généré
+// depuis le logo source via scripts/build_emblem_transparent.py
 export function AlbatrosMark({ size = 28, className = "" }: { size?: number; className?: string }) {
   return (
-    <svg
-      width={size} height={size} viewBox="0 0 48 48" fill="none"
-      className={className} aria-hidden="true"
-    >
-      {/* Aile d'albatros + bouclier : vigilance et protection (§3.1) */}
-      <path d="M5 37 Q24 37 43 23" stroke="#E53945" strokeWidth="3.5" strokeLinecap="round" />
-      <path d="M10 29 Q27 29 40 17" stroke="#E53945" strokeWidth="3.5" strokeLinecap="round" opacity="0.5" />
-      <path d="M17 21 Q29 21 36 11" stroke="#E53945" strokeWidth="3.5" strokeLinecap="round" opacity="0.25" />
-      <circle cx="43" cy="23" r="3.4" fill="#E53945" />
-    </svg>
+    <Image
+      src="/brand/albatros-emblem.png"
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      priority
+      draggable={false}
+      className={`shrink-0 dark:drop-shadow-[0_0_10px_rgba(229,57,69,0.4)] ${className}`}
+    />
   );
 }
 
+// Lockup officiel : emblème + ALBATROS surmontant PROTECT (filets rouges,
+// conformément au logo « Albatros Protect en vol »)
 export function AlbatrosLogo({ size = 30 }: { size?: number }) {
   return (
     <div className="flex items-center gap-2.5 select-none">
@@ -46,8 +51,12 @@ export function AlbatrosLogo({ size = 30 }: { size?: number }) {
         <div className="font-semibold tracking-wide text-foreground" style={{ fontSize: size * 0.42 }}>
           ALBATROS
         </div>
-        <div className="font-bold tracking-widest text-primary" style={{ fontSize: size * 0.46 }}>
-          PROTECT
+        <div className="mt-1 flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-px shrink-0 rounded-full bg-primary" style={{ width: Math.max(6, size * 0.24) }} />
+          <div className="font-bold tracking-widest text-primary" style={{ fontSize: size * 0.46 }}>
+            PROTECT
+          </div>
+          <span aria-hidden="true" className="h-px shrink-0 rounded-full bg-primary" style={{ width: Math.max(6, size * 0.24) }} />
         </div>
       </div>
     </div>

@@ -2,6 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import { Loader2 } from "lucide-react";
 import { useAlbatros } from "@/components/albatros/store";
 import { LandingView } from "@/components/albatros/landing";
 import { AuthView } from "@/components/albatros/auth-view";
@@ -18,7 +20,6 @@ import { ConsoleView } from "@/components/albatros/console-view";
 import { NotificationsView } from "@/components/albatros/notifications-view";
 import { StepsView } from "@/components/albatros/steps-view";
 import { HelpView } from "@/components/albatros/help-view";
-import { AlbatrosMark } from "@/components/albatros/shared";
 import type { SessionUser } from "@/components/albatros/types";
 
 export default function Page() {
@@ -40,9 +41,24 @@ export default function Page() {
 
   if (!booted) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
-        <AlbatrosMark size={44} className="animate-pulse" />
-        <p className="text-xs text-muted-foreground">Chargement du portail…</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background">
+        <div className="relative">
+          <div className="absolute -inset-8 animate-pulse rounded-[2.5rem] bg-primary/20 blur-3xl" />
+          <div className="relative rotate-1 rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-primary/20">
+            <Image
+              src="/brand/albatros-en-vol.webp"
+              alt="Albatros Protect — albatros en vol devant un bouclier GPS"
+              width={260}
+              height={121}
+              priority
+              className="h-auto w-[260px]"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Chargement du portail…
+        </div>
       </div>
     );
   }

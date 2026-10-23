@@ -83,3 +83,26 @@ Stage Summary:
 - Suite favicon RealFaviconGenerator complète dans public/ + metadata Next.js transposée des markups RFG
 - Identité visuelle déployée partout : onglets navigateur, écran d'accueil iOS, PWA Android, partage social (og/twitter), hero landing, icônes launcher Android/iOS, /logo.svg
 - Pipeline re-générable documenté dans scripts/ (masters conservés : master-shield.png, master-logo.png)
+
+---
+Task ID: 9
+Agent: main (Z.ai)
+Task: Remplacer le faux logo (SVG placeholder) par le vrai logo dans la page de loading, la navbar et le footer
+
+Work Log:
+- Diagnostic : AlbatrosMark/AlbatrosLogo (shared.tsx) étaient un dessin SVG abstrait (3 traits d'aile + point) — utilisés à 9 endroits : loading (page.tsx), navbar landing + sidebar app + header/drawer mobile (app-shell), footer landing + footer app, CTA landing, page auth
+- Vérification VLM des assets réels : master bouclier (bordure rouge biseautée, intérieur sombre, ailes blanches, pin rouge), logo glossy complet (oiseau entier, bec rouge à droite), lockup complet (ALBATROS noir + PROTECT rouge entre filets)
+- Nouvel asset : scripts/build_emblem_transparent.py — clip v3 (polygone bézier validé favicons) composé sur canal ALPHA → public/brand/albatros-emblem.png (512×512 RGBA, 194 Ko, crop serré, bords anti-aliasés)
+- Contrôle qualité emblème transparent sur 3 fonds (#101114, #191A1F, #F4F4F6) : VLM GO ×3 (pas de halo blanc, contraste OK)
+- shared.tsx : AlbatrosMark → next/image emblème officiel (+ glow rouge discret en mode sombre via drop-shadow) ; AlbatrosLogo → lockup fidèle (ALBATROS / PROTECT entre filets rouges, comme le logo source)
+- page.tsx loading : carte blanche arrondie (motif hero) avec le logo complet albatros-en-vol.webp + halo pulsant + spinner Loader2
+- landing.tsx CTA « Prêt à protéger » : AlbatrosMark 40px → carte blanche avec logo complet (cohérent avec le hero)
+- Footer landing, footer app, navbar, sidebar, drawer, auth : mis à jour automatiquement via les composants partagés
+- Capture du boot screen via agent-browser (network route --abort sur /api/v1/auth/session)
+- Validation VLM 10/10 GO : loading sombre/clair, navbar sombre/clair, footer sombre/clair, CTA sombre/clair, sidebar dashboard, footer app
+- Build production : ✓ Compiled successfully ; dev server 200 stable
+
+Stage Summary:
+- Le vrai logo (emblème bouclier officiel transparent + lockup fidèle) est en place partout : loading, navbar (desktop + mobile), footer, CTA, auth, sidebar
+- Asset réutilisable public/brand/albatros-emblem.png + script régénérable dans scripts/
+- Mode sombre : halo rouge subtil autour de l'écu pour la lisibilité ; mode clair : rendu natif

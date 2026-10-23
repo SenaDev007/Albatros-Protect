@@ -220,8 +220,16 @@ export function LandingView() {
         </HonestyNote>
 
         <div className="mt-12 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/15 via-transparent to-transparent p-8 md:p-12">
-          <AlbatrosMark size={40} />
-          <h3 className="mt-4 text-2xl font-bold md:text-3xl">Prêt à protéger vos appareils ?</h3>
+          <div className="w-fit rounded-2xl bg-white p-4 shadow-xl ring-1 ring-primary/20">
+            <Image
+              src="/brand/albatros-en-vol.webp"
+              alt="Albatros Protect — albatros en vol devant un bouclier GPS"
+              width={230}
+              height={107}
+              className="h-auto w-[230px]"
+            />
+          </div>
+          <h3 className="mt-5 text-2xl font-bold md:text-3xl">Prêt à protéger vos appareils ?</h3>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             L&apos;inscription prend deux minutes : un numéro vérifiable suffit. Vous gardez le contrôle total
             sur chaque fonctionnalité.
