@@ -58,3 +58,28 @@ Stage Summary:
 - Repo GitHub https://github.com/SenaDev007/Albatros-Protect synchronisé (branche main, ~175 fichiers)
 - Projet Vercel-ready : import → déployer sans aucune variable d'environnement
 - Données de démo embarquées (compte +22997000001), persistance éphémère documentée avec chemin de migration production
+
+---
+Task ID: 8
+Agent: main (Z.ai)
+Task: Générer les favicons Albatros Protect depuis les logos officiels (realfavicongenerator) et les intégrer partout dans le projet
+
+Work Log:
+- Merge du commit distant « Add files via upload » (2 logos PNG 1774×887, fond blanc) dans public/
+- Analyse VLM des deux logos : « Logo en vol » = logo complet avec typo (→ og-image) ; « glossy » = emblème seul (→ favicons)
+- Relevé de composition précis (grille fine + VLM) : bouclier X 34-70 % / Y 5-85 %, épingle 47-57/14-42, corps oiseau 42-68/35-72, ailes 2-48 %, bec 68-97 % ; l'oiseau passe DEVANT la bordure (design d'origine)
+- 3 itérations de master favicon : crop brut (coupures nettes ✗) → clip pentagone v2 (flancs droits ✗, fragment de bec flottant ✗) → clip v3 suivant les courbes réelles de l'écu (béziers, flancs resserrés sur la bordure) — validé VLM « GO » à 1024/256/48 px
+- Génération de la suite officielle @realfavicongenerator/generate-favicon 0.9 : favicon.ico (48/32/16), favicon-96x96.png, favicon.svg, apple-touch-icon.png 180, web-app-manifest-192/512.png, site.webmanifest (name Albatros Protect, theme #101114, display standalone, purpose maskable)
+- favicon.svg allégé : PNG 1024 embarqué → 256px (651 Ko → 70 Ko)
+- og-image 1200×630 : fond #101114 + halo rouge #E53945, carte blanche arrondie + ombre douce avec le logo complet — validé VLM « GO »
+- layout.tsx : metadata complète (icons icônes multiples, shortcut, apple, manifest, appleWebApp, openGraph + twitter summary_large_image, metadataBase dynamique VERCEL_URL/NEXT_PUBLIC_SITE_URL) — remplace l'ancienne icône CDN
+- Icônes mobiles : Android mipmap-mdpi→xxxhdpi ic_launcher + ic_launcher_round (roundIcon ajouté au manifest) ; iOS Assets.xcassets/AppIcon.appiconset 1024 + Contents.json + clés CFBundleIconName/File dans Info.plist
+- Hero landing : emblème officiel en carte blanche (rotate-1, halo rouge) via next/image, asset WebP 36 Ko (public/brand/) — validé visuellement (agent-browser + VLM)
+- public/logo.svg remplacé par la marque Albatros (aile rouge #E53945) ; zips mobiles regénérés avec icônes incluses ; README racine + README livrables + scripts/README.md (pipeline) mis à jour
+- Serveur dev : redémarré proprement (pattern sous-shell détaché, purge .next/dev) — 200 stable, DOM live vérifié (5 liens favicon + manifest + hero image)
+- Build de production : ✓ Compiled successfully, 21/21 pages
+
+Stage Summary:
+- Suite favicon RealFaviconGenerator complète dans public/ + metadata Next.js transposée des markups RFG
+- Identité visuelle déployée partout : onglets navigateur, écran d'accueil iOS, PWA Android, partage social (og/twitter), hero landing, icônes launcher Android/iOS, /logo.svg
+- Pipeline re-générable documenté dans scripts/ (masters conservés : master-shield.png, master-logo.png)

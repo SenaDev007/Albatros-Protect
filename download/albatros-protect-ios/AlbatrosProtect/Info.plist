@@ -7,6 +7,13 @@
     <key>CFBundleShortVersionString</key>
     <string>0.1.0</string>
 
+    <!-- Icône d'app : Assets.xcassets/AppIcon.appiconset (1024×1024,
+         bouclier GPS Albatros Protect) référencée par nom de catalogue -->
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+
     <!--
       Permissions honnêtes (§8.2) — textes explicites exigés par Apple.
       Aucune NSCameraUsageDescription : la capture clandestine est exclue (F-026).

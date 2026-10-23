@@ -12,7 +12,8 @@ Identité visuelle : noir & rouge (dark premium), unicité du service par identi
 | `src/app/api/v1/` | **API REST** partagée : auth OTP, appareils, incidents, observations (localisation/radio/BLE), cercles, consentements, partages, audit, console opérateur |
 | `prisma/` | Schéma de données Prisma (SQLite en pilote) |
 | `db/custom.db` | Base SQLite de démarrage (schéma + données de démonstration) |
-| `download/albatros-protect-android/` | **App native Android** (Kotlin + Jetpack Compose) |
+| `public/` | **Identité visuelle** : favicons officiels (générés par RealFaviconGenerator depuis le logo bouclier GPS — `favicon.ico`, `favicon.svg`, `favicon-96x96.png`, `apple-touch-icon.png`, `web-app-manifest-192/512.png`, `site.webmanifest`), `og-image.png` (partage social 1200×630), logos sources (`Logo Albatros Protect en vol.png`, `Albatros aérien et bouclier GPS glossy.png`), `brand/` (assets optimisés pour l'UI) |
+| `download/albatros-protect-android/` | **App native Android** (Kotlin + Jetpack Compose), icônes launcher `res/mipmap-*` |
 | `download/albatros-protect-ios/` | **App native iOS** (Swift + SwiftUI) |
 | `download/*.zip` | Archives des deux apps mobiles |
 

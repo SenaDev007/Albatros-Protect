@@ -4,6 +4,7 @@
 import { useAlbatros } from "./store";
 import { AlbatrosLogo, AlbatrosMark, HonestyNote } from "./shared";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import {
   ShieldCheck, Smartphone, Radio, Users, FileText, MapPin, BellRing,
   Handshake, Lock, Landmark, Scale, ChevronRight,
@@ -33,35 +34,54 @@ export function LandingView() {
 
         {/* Héro */}
         <section className="mx-auto w-full max-w-6xl px-6 pb-16 pt-10 md:pt-20">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
-            <MapPin className="h-3.5 w-3.5" />
-            Pilote — Parakou, République du Bénin
+          <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
+                <MapPin className="h-3.5 w-3.5" />
+                Pilote — Parakou, République du Bénin
+              </div>
+              <h1 className="albatros-glow mt-6 max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                Protéger. Localiser. <span className="text-primary">Récupérer.</span>
+              </h1>
+              <p className="mt-3 text-sm font-medium uppercase tracking-[0.3em] text-muted-foreground">
+                Albatros Protect
+              </p>
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+                Albatros Protect aide les citoyens à préparer leurs appareils avant l&apos;incident, à signaler
+                rapidement une perte ou un vol, et à suivre leurs démarches auprès des opérateurs et des
+                autorités — avec une localisation <strong className="text-foreground">honnête</strong> : chaque
+                position affiche sa source, son heure et sa précision réelle. Jamais de promesse impossible.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Button size="lg" onClick={() => setView("auth")} className="bg-primary hover:bg-primary/90">
+                  Protéger mes appareils
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button size="lg" variant="outline" onClick={() => setView("auth")}>
+                  J&apos;ai déjà un compte
+                </Button>
+              </div>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Compte de démonstration : <code className="rounded bg-secondary px-1.5 py-0.5">+22997000001</code>{" "}
+                — le code de vérification s&apos;affiche à l&apos;écran en mode pilote.
+              </p>
+            </div>
+
+            {/* Emblème officiel — albatros en vol devant le bouclier GPS */}
+            <div className="relative mx-auto hidden w-full max-w-md lg:block">
+              <div className="absolute -inset-8 rounded-[2.5rem] bg-primary/20 blur-3xl" />
+              <div className="relative rotate-1 rounded-2xl bg-white p-7 shadow-2xl ring-1 ring-primary/20">
+                <Image
+                  src="/brand/albatros-en-vol.webp"
+                  alt="Albatros Protect — albatros en vol devant un bouclier GPS"
+                  width={820}
+                  height={383}
+                  priority
+                  className="h-auto w-full"
+                />
+              </div>
+            </div>
           </div>
-          <h1 className="albatros-glow mt-6 max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-            Protéger. Localiser. <span className="text-primary">Récupérer.</span>
-          </h1>
-          <p className="mt-3 text-sm font-medium uppercase tracking-[0.3em] text-muted-foreground">
-            Albatros Protect
-          </p>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            Albatros Protect aide les citoyens à préparer leurs appareils avant l&apos;incident, à signaler
-            rapidement une perte ou un vol, et à suivre leurs démarches auprès des opérateurs et des autorités —
-            avec une localisation <strong className="text-foreground">honnête</strong> : chaque position affiche
-            sa source, son heure et sa précision réelle. Jamais de promesse impossible.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Button size="lg" onClick={() => setView("auth")} className="bg-primary hover:bg-primary/90">
-              Protéger mes appareils
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => setView("auth")}>
-              J&apos;ai déjà un compte
-            </Button>
-          </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Compte de démonstration : <code className="rounded bg-secondary px-1.5 py-0.5">+22997000001</code> — le code
-            de vérification s&apos;affiche à l&apos;écran en mode pilote.
-          </p>
         </section>
 
         {/* Chiffres clés */}
