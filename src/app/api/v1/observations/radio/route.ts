@@ -8,7 +8,7 @@ import { requireUser, ok, apiFail, parseBody, logAudit } from "@/lib/api";
 const globalQuota = globalThis as unknown as { __albatrosGeoCalls?: { date: string; count: number } };
 const DAILY_QUOTA = 40;
 
-const COTONOU = { lat: 6.3654, lng: 2.3966 };
+const COTONOU = { lat: 9.3433, lng: 2.6089 };
 const jitter = (v: number, d: number) => v + (Math.random() - 0.5) * d;
 
 export async function POST(req: Request) {

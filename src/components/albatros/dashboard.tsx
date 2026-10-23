@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "./api";
-import { useAlbatros } from "./store";
+import { useAlbatros, type View } from "./store";
 import {
   SourceBadge, StatusBadge, FreshnessTag, EmptyState, HonestyNote, FormatDateTime,
 } from "./shared";
@@ -14,7 +14,7 @@ import { readinessScore } from "@/lib/albatros";
 import type { Device, Incident, Observation } from "./types";
 import {
   Smartphone, Tablet, Laptop, Monitor, Siren, Map as MapIcon, Plus,
-  ShieldCheck, Signal, ArrowRight, SearchX,
+  ShieldCheck, Signal, ArrowRight, SearchX, FileText, ClipboardList,
 } from "lucide-react";
 
 export const CATEGORY_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -47,6 +47,29 @@ export function DashboardView() {
     .map((d) => d.lastObservation)
     .filter((o): o is Observation => !!o)
     .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt));
+
+  // §6.3 — Actions recommandées : chaque recommandation est liée à une règle réelle
+  // du système (jamais générée pour remplir l'interface).
+  type Reco = { id: string; icon: React.ComponentType<{ className?: string }>; text: string; go: View; };
+  const recommendations: Reco[] = [];
+  for (const d of devices ?? []) {
+    if (d.openIncident && !d.policeReportRef) recommendations.push({
+      id: `r-police-${d.id}`, icon: Siren,
+      text: `Ajouter la référence de plainte au dossier ${d.openIncident.refNumber}.`, go: "incidents",
+    });
+    if (!d.enrolled && !d.openIncident) recommendations.push({
+      id: `r-enroll-${d.id}`, icon: ShieldCheck,
+      text: `Terminer la préparation de « ${d.brand} ${d.model} » : l'agent n'est pas encore enrôlé.`, go: "preparation",
+    });
+    if (d.enrolled && !d.proofUploaded) recommendations.push({
+      id: `r-proof-${d.id}`, icon: FileText,
+      text: `Ajouter une preuve de propriété pour « ${d.brand} ${d.model} ».`, go: "steps",
+    });
+    if (d.enrolled && !d.identifiersComplete) recommendations.push({
+      id: `r-ident-${d.id}`, icon: Smartphone,
+      text: `Compléter les identifiants de « ${d.brand} ${d.model} » (IMEI, n° de série ou référence).`, go: "devices",
+    });
+  }
 
   return (
     <div className="space-y-8">
@@ -100,19 +123,19 @@ export function DashboardView() {
         </div>
       )}
 
-      {/* Indicateurs */}
+      {/* §6.3 — Indicateurs principaux */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[
-          { icon: Smartphone, v: devices?.length ?? "—", l: "appareils enregistrés" },
-          { icon: ShieldCheck, v: devices ? `${avgReadiness} %` : "—", l: "préparation moyenne" },
-          { icon: Siren, v: openIncidents.length, l: "incident(s) en cours" },
-          { icon: Signal, v: allObs.length, l: "dernières positions suivies" },
-        ].map((k) => (
-          <div key={k.l} className="rounded-xl border border-border bg-card p-4">
+        {([
+          { icon: Smartphone, v: devices?.length ?? "—", l: "appareils enregistrés", go: "devices" as View },
+          { icon: ShieldCheck, v: devices ? `${avgReadiness} %` : "—", l: "préparation moyenne", go: "preparation" as View },
+          { icon: Siren, v: openIncidents.length, l: "dossier(s) ouvert(s)", go: "incidents" as View },
+          { icon: Signal, v: allObs.length, l: "dernières observations", go: "map" as View },
+        ] as const).map((k) => (
+          <button key={k.l} onClick={() => setView(k.go)} className="rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40">
             <k.icon className="h-4 w-4 text-primary" />
             <div className="mt-2 text-2xl font-bold">{k.v}</div>
             <div className="text-xs text-muted-foreground">{k.l}</div>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -160,7 +183,7 @@ export function DashboardView() {
                     </div>
                     {d.openIncident ? <StatusBadge status={d.openIncident.status} /> : (
                       d.enrolled
-                        ? <span className="rounded-full border border-emerald-900/60 bg-emerald-950/40 px-2 py-0.5 text-[11px] text-emerald-300">agent actif</span>
+                        ? <span className="rounded-full border border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 px-2 py-0.5 text-[11px] text-emerald-600 dark:text-emerald-300">agent actif</span>
                         : <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">non enrôlé</span>
                     )}
                   </div>
@@ -183,10 +206,10 @@ export function DashboardView() {
         )}
       </section>
 
-      {/* Dernières observations */}
+      {/* §6.3 — Activité récente */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Dernières observations reçues</h2>
+          <h2 className="text-lg font-semibold">Activité récente</h2>
         </div>
         {!devices ? (
           <Skeleton className="h-40 rounded-xl" />
@@ -227,6 +250,42 @@ export function DashboardView() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+      </section>
+
+      {/* §6.3 — Actions recommandées (règles réelles uniquement) */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Actions recommandées</h2>
+          <button onClick={() => setView("steps")} className="flex items-center gap-1 text-sm text-primary hover:underline">
+            <ClipboardList className="h-3.5 w-3.5" /> Toutes les démarches
+          </button>
+        </div>
+        {recommendations.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card/40 px-6 py-8 text-center">
+            <ShieldCheck className="mx-auto h-8 w-8 text-emerald-500" />
+            <p className="mt-3 text-sm font-medium">Tout est en ordre</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Vos appareils sont préparés et vos dossiers à jour. Aucune recommandation active —
+              les prochaines apparaîtront selon l&apos;état réel de votre compte.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {recommendations.slice(0, 4).map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setView(r.go)}
+                className="flex w-full items-center gap-4 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/40"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-950/40">
+                  <r.icon className="h-4 w-4 text-orange-600 dark:text-orange-300" />
+                </div>
+                <span className="flex-1 text-sm">{r.text}</span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </button>
+            ))}
           </div>
         )}
       </section>

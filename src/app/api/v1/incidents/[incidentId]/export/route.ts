@@ -27,7 +27,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ inciden
 
   const dossier = {
     generated_at: new Date().toISOString(),
-    service: "Agent Albatros — pilote Cotonou",
+    service: "Agent Albatros — pilote Parakou",
     disclaimer:
       "Récapitulatif établi à partir des déclarations du propriétaire. Ce document n'est pas un procès-verbal officiel et n'atteste pas par lui-même d'un vol. Les identifiants sont partiellement masqués dans l'export standard ; la présentation des originaux se fait dans le cadre des procédures officielles.",
     incident: {

@@ -12,28 +12,28 @@ export const OBSERVATION_SOURCES: Record<
   { label: string; short: string; color: string; description: string }
 > = {
   native_location: {
-    label: "Position de l'appareil",
+    label: "Position reçue de l'appareil",
     short: "Appareil",
-    color: "#E11D2E",
+    color: "#E53945",
     description:
       "Position transmise par l'application/agent installé sur l'appareil, via les API de localisation autorisées du système.",
   },
   google_geolocation: {
-    label: "Estimation Wi-Fi/cellulaire (Google)",
+    label: "Estimation Wi-Fi/cellulaire",
     short: "Estimation",
     color: "#F59E0B",
     description:
       "Estimation calculée par Google Maps Platform Geolocation API à partir d'observations Wi-Fi/cellulaires autorisées, avec son rayon d'incertitude.",
   },
   ble_witness: {
-    label: "Détection Bluetooth (téléphone participant)",
+    label: "Détection Bluetooth à proximité",
     short: "Bluetooth",
     color: "#8B5CF6",
     description:
-      "Un téléphone participant au réseau a détecté un identifiant temporaire à proximité. La position affichée est celle du détecteur, pas un GPS de l'appareil recherché.",
+      "Un téléphone participant a détecté un identifiant temporaire à proximité. La position affichée est celle du détecteur — jamais un GPS de l'appareil recherché.",
   },
   operator_authorized: {
-    label: "Position communiquée par un partenaire",
+    label: "Position communiquée par un partenaire autorisé",
     short: "Partenaire",
     color: "#14B8A6",
     description:
@@ -62,7 +62,7 @@ export const INCIDENT_STATUSES: Record<
   ready_to_transmit: { label: "Prêt à transmettre", tone: "info" },
   transmitted: { label: "Transmis au partenaire", tone: "info" },
   processing: { label: "En traitement", tone: "info" },
-  response_received: { label: "Réponse reçue", tone: "success" },
+  response_received: { label: "Réponse reçue", tone: "info" },
   closed: { label: "Clôturé", tone: "success" },
   disputed: { label: "Contesté", tone: "danger" },
 };
@@ -138,7 +138,7 @@ export function freshnessBucket(capturedAt: string | Date): {
   if (ageMin < 15) return { key: "fresh", label: "Position récente" };
   if (ageMin < 60) return { key: "recent", label: "Position de moins d'une heure" };
   if (ageMin < 24 * 60) return { key: "stale", label: "Position ancienne" };
-  return { key: "very_old", label: "Très ancienne dernière position connue" };
+  return { key: "very_old", label: "Dernière position connue" };
 }
 
 export function formatAgo(date: string | Date): string {

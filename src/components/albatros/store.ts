@@ -12,6 +12,9 @@ export type View =
   | "incident"
   | "map"
   | "circles"
+  | "steps"
+  | "notifications"
+  | "help"
   | "settings"
   | "console";
 

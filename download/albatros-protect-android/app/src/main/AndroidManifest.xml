@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Albatros Protect — AndroidManifest
+  Les permissions sensibles se demandent au moment pertinent (F-020), jamais à l'installation.
+  Aucune permission caméra : la capture clandestine est exclue (F-026).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Réseau : appels API /api/v1 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Localisation : demande runtime au moment pertinent, justification explicite (F-020)
+         ACCESS_BACKGROUND_LOCATION ne s'ajoute qu'avec la revue Play Store dédiée (Phase 2). -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- BLE communautaire (Android 12+) — participation facultative et révocable (F-024)
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    -->
+
+    <application
+        android:label="Albatros Protect"
+        android:icon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AlbatrosProtect">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AlbatrosProtect">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+        Clé Google Maps SDK — restreinte par package + SHA-1 de signature (jamais dans le code) :
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="VOTRE_CLE_RESTREINTE" />
+        -->
+    </application>
+</manifest>

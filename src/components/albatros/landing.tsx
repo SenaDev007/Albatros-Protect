@@ -33,15 +33,18 @@ export function LandingView() {
 
         {/* Héro */}
         <section className="mx-auto w-full max-w-6xl px-6 pb-16 pt-10 md:pt-20">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-red-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
             <MapPin className="h-3.5 w-3.5" />
-            Pilote — Cotonou, République du Bénin
+            Pilote — Parakou, République du Bénin
           </div>
           <h1 className="albatros-glow mt-6 max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-            Enregistrez. Signalez. <span className="text-primary">Retrouvez.</span>
+            Protéger. Localiser. <span className="text-primary">Récupérer.</span>
           </h1>
+          <p className="mt-3 text-sm font-medium uppercase tracking-[0.3em] text-muted-foreground">
+            Albatros Protect
+          </p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            Agent Albatros aide les citoyens à préparer leurs appareils avant l&apos;incident, à signaler
+            Albatros Protect aide les citoyens à préparer leurs appareils avant l&apos;incident, à signaler
             rapidement une perte ou un vol, et à suivre leurs démarches auprès des opérateurs et des autorités —
             avec une localisation <strong className="text-foreground">honnête</strong> : chaque position affiche
             sa source, son heure et sa précision réelle. Jamais de promesse impossible.
@@ -130,7 +133,7 @@ export function LandingView() {
       </section>
 
       {/* Transparence */}
-      <section id="transparence" className="border-y border-border bg-secondary/30">
+      <section id="transparence" className="border-y border-border bg-secondary/40">
         <div className="mx-auto w-full max-w-6xl px-6 py-16">
           <div className="flex items-center gap-3">
             <Scale className="h-6 w-6 text-primary" />
@@ -174,7 +177,7 @@ export function LandingView() {
             { n: "Moov Africa Bénin", d: "Suspension SIM, vérification IMEI", s: "En discussion" },
             { n: "Celtiis (SBIN)", d: "Suspension SIM, vérification IMEI", s: "En discussion" },
             { n: "APDP", d: "Formalités de protection des données personnelles", s: "Cadrage préalable" },
-            { n: "Police / Justice", d: "Parcours de plainte et pièces requises", s: "À valider" },
+            { n: "Police / Justice (Parakou)", d: "Parcours de plainte et pièces requises", s: "À valider" },
           ].map((p) => (
             <div key={p.n} className="rounded-xl border border-border bg-card p-5">
               <div className="flex items-start justify-between gap-3">
@@ -215,11 +218,11 @@ export function LandingView() {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-8 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <AlbatrosMark size={22} />
-            <span>Agent Albatros — pilote Cotonou, République du Bénin</span>
+            <span>Albatros Protect — pilote Parakou, République du Bénin</span>
           </div>
           <div className="flex flex-wrap gap-5">
             <span>Code du numérique (Loi n° 2017-20) · formalités APDP en cours</span>
-            <span>© {new Date().getFullYear()} Agent Albatros</span>
+            <span>© {new Date().getFullYear()} Albatros Protect</span>
           </div>
         </div>
       </footer>

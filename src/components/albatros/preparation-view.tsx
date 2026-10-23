@@ -173,13 +173,13 @@ export function PreparationView() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${s.done ? "bg-emerald-950/40" : "bg-secondary"}`}>
-                      <s.icon className={`h-5 w-5 ${s.done ? "text-emerald-400" : "text-muted-foreground"}`} />
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${s.done ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-secondary"}`}>
+                      <s.icon className={`h-5 w-5 ${s.done ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 font-medium">
                         {s.title}
-                        {s.done && <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
+                        {s.done && <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />}
                       </div>
                       <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
                     </div>
@@ -223,8 +223,8 @@ export function PreparationView() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-amber-900/50 bg-amber-950/10 p-5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-amber-300">
+            <div className="rounded-xl border border-amber-300/60 bg-amber-50/60 dark:border-amber-900/50 dark:bg-amber-950/10 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-amber-600 dark:text-amber-300">
                 <AlertTriangle className="h-4 w-4" /> Limites à connaître (F-022)
               </div>
               <ul className="mt-3 space-y-2.5 text-xs leading-relaxed text-muted-foreground">

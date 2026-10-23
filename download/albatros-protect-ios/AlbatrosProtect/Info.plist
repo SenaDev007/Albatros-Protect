@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDisplayName</key>
+    <string>Albatros Protect</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+
+    <!--
+      Permissions honnêtes (§8.2) — textes explicites exigés par Apple.
+      Aucune NSCameraUsageDescription : la capture clandestine est exclue (F-026).
+    -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Albatros Protect transmet la position de cet appareil uniquement avec votre accord, pour vous permettre de le retrouver en cas de perte ou de vol. Vous pouvez désactiver cette transmission à tout moment.</string>
+
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Le réseau communautaire de détection utilise Bluetooth pour signaler la proximité d'appareils perdus, de façon anonyme et révocable. Aucune donnée d'identité n'est échangée par Bluetooth.</string>
+
+    <!-- Phase 2 : Google Maps SDK pour iOS (clé restreinte au bundle ID, jamais dans le code)
+    <key>GMSApplicationKey</key>
+    <string>VOTRE_CLE_RESTREINTE</string>
+    -->
+
+    <!-- Modes clair/sombre pris en charge (§2.3) -->
+    <key>UIUserInterfaceStyle</key>
+    <string>Automatic</string>
+</dict>
+</plist>

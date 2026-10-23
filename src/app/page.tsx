@@ -15,6 +15,9 @@ import { MapView } from "@/components/albatros/map-view";
 import { CirclesView } from "@/components/albatros/circles-view";
 import { SettingsView } from "@/components/albatros/settings-view";
 import { ConsoleView } from "@/components/albatros/console-view";
+import { NotificationsView } from "@/components/albatros/notifications-view";
+import { StepsView } from "@/components/albatros/steps-view";
+import { HelpView } from "@/components/albatros/help-view";
 import { AlbatrosMark } from "@/components/albatros/shared";
 import type { SessionUser } from "@/components/albatros/types";
 
@@ -57,6 +60,9 @@ export default function Page() {
       {view === "incident" && focusIncidentId && <IncidentDetailView incidentId={focusIncidentId} />}
       {view === "map" && <MapView />}
       {view === "circles" && <CirclesView />}
+      {view === "steps" && <StepsView />}
+      {view === "notifications" && <NotificationsView />}
+      {view === "help" && <HelpView />}
       {view === "settings" && <SettingsView />}
       {view === "console" && <ConsoleView />}
     </AppShell>

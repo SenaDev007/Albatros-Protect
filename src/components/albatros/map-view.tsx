@@ -4,6 +4,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 import "leaflet/dist/leaflet.css";
 import { api, ApiError } from "./api";
 import { useAlbatros } from "./store";
@@ -22,7 +23,12 @@ import {
 
 const SOURCE_KEYS = Object.keys(OBSERVATION_SOURCES) as ObservationSource[];
 
-// ---------- Carte Leaflet (montage client uniquement) ----------
+// ---------- Carte Leaflet (montage client, thème clair/sombre) ----------
+const TILES = {
+  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+};
+
 function AlbatrosMap({ observations, view, onReady }: {
   observations: Observation[];
   view: "plan" | "satellite";
@@ -32,6 +38,7 @@ function AlbatrosMap({ observations, view, onReady }: {
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const layerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const tileRef = useRef<import("leaflet").TileLayer | null>(null);
+  const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -40,11 +47,11 @@ function AlbatrosMap({ observations, view, onReady }: {
       const L = (await import("leaflet")).default;
       if (cancelled || !containerRef.current || mapRef.current) return;
       const map = L.map(containerRef.current, {
-        center: [6.3654, 2.3966], zoom: 12, zoomControl: true, attributionControl: true,
+        center: [9.3433, 2.6089], zoom: 12, zoomControl: true, attributionControl: true,
       });
       tileRef.current = L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        { attribution: '&copy; OpenStreetMap &copy; CARTO — démo', subdomains: "abcd", maxZoom: 20 },
+        TILES.dark,
+        { attribution: "&copy; OpenStreetMap &copy; CARTO — démo", subdomains: "abcd", maxZoom: 20 },
       ).addTo(map);
       layerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
@@ -52,23 +59,23 @@ function AlbatrosMap({ observations, view, onReady }: {
       onReady?.((lat, lng, zoom = 15) => map.flyTo([lat, lng], zoom, { duration: 0.8 }));
     })();
     return () => { cancelled = true; };
-     
   }, []);
 
-  // Fond de carte : plan / satellite
+  // Fond de carte : plan (selon le thème) / satellite
   useEffect(() => {
     (async () => {
       const L = (await import("leaflet")).default;
       if (!mapRef.current || !tileRef.current) return;
       mapRef.current.removeLayer(tileRef.current);
-      tileRef.current = view === "plan"
-        ? L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-            { attribution: "&copy; OpenStreetMap &copy; CARTO — démo", subdomains: "abcd", maxZoom: 20 })
-        : L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            { attribution: "Imagerie Esri — démo", maxZoom: 19 });
+      tileRef.current =
+        view === "satellite"
+          ? L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+              { attribution: "Imagerie Esri — démo", maxZoom: 19 })
+          : L.tileLayer(resolvedTheme === "dark" ? TILES.dark : TILES.light,
+              { attribution: "&copy; OpenStreetMap &copy; CARTO — démo", subdomains: "abcd", maxZoom: 20 });
       tileRef.current.addTo(mapRef.current);
     })();
-  }, [view]);
+  }, [view, resolvedTheme]);
 
   // Marqueurs + cercles de précision, jamais fusionnés (§8.2)
   useEffect(() => {
@@ -343,7 +350,7 @@ export function MapView() {
                 </Button>
               </div>
               {!device.enrolled && (
-                <p className="mt-2 text-[11px] text-amber-300/80">
+                <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-600/80 dark:text-amber-300/80">
                   Enrôlez l&apos;agent de cet appareil (Préparation) pour activer les simulations de position.
                 </p>
               )}

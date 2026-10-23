@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 const OPERATORS = ["MTN Bénin", "Moov Africa Bénin", "Celtiis (SBIN)"];
-const AUTHORITIES = ["Police (Cotonou)", "Gendarmerie", "Justice"];
+const AUTHORITIES = ["Police (Parakou)", "Gendarmerie", "Justice"];
 
 const IMMEDIATE_ACTIONS = [
   { icon: Lock, t: "Sécuriser vos comptes en ligne", d: "Changez les mots de passe de vos emails, réseaux sociaux et applications bancaires depuis un appareil de confiance. Déconnectez les sessions distantes." },
@@ -197,9 +197,9 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
             <div key={e.id} className="relative flex gap-4 pb-5 last:pb-0">
               {i < events.length - 1 && <span className="absolute left-[9px] top-5 h-full w-px bg-border" />}
               <span className={`mt-1 h-[18px] w-[18px] shrink-0 rounded-full border-2 ${
-                e.type === "closure" ? "border-emerald-500 bg-emerald-950"
+                e.type === "closure" ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
                 : e.type === "status_change" ? "border-primary bg-primary/20"
-                : e.type === "partner" ? "border-amber-500 bg-amber-950"
+                : e.type === "partner" ? "border-amber-500 bg-amber-50 dark:bg-amber-950"
                 : "border-border bg-secondary"
               }`} />
               <div className="min-w-0">
@@ -241,7 +241,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
       </div>
 
       {/* Partenaires (F-070 … F-076) */}
-      <div className="rounded-xl border border-amber-900/40 bg-amber-950/10 p-5">
+      <div className="rounded-xl border border-amber-300/60 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/10 p-5">
         <div className="flex items-center gap-2">
           <Handshake className="h-4 w-4 text-amber-400" />
           <h3 className="text-sm font-semibold">Demandes opérateur / autorités</h3>
@@ -289,7 +289,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
                 <span>
                   <strong>{p.partnerName}</strong> · {p.requestType === "sim_suspension" ? "Suspension SIM" : p.requestType === "imei_block" ? "Blocage IMEI" : "Localisation réseau"}
                 </span>
-                <span className="rounded-full border border-amber-900/50 bg-amber-950/30 px-2 py-0.5 text-[11px] text-amber-300">
+                <span className="rounded-full border border-amber-900/50 bg-amber-950/30 px-2 py-0.5 text-[11px] text-amber-600 dark:text-amber-300">
                   {p.status === "inactive" ? "inactive — aucune convention" : p.status}
                 </span>
               </div>
@@ -322,8 +322,8 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
       </div>
 
       {incident.closedAt && (
-        <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/10 p-5 text-sm">
-          <strong className="text-emerald-300">Dossier clôturé</strong> le <FormatDateTime date={incident.closedAt} />.
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/10 p-5 text-sm">
+          <strong className="text-emerald-600 dark:text-emerald-300">Dossier clôturé</strong> le <FormatDateTime date={incident.closedAt} />.
           {incident.closeReason && <span className="text-muted-foreground"> {incident.closeReason}</span>}
         </div>
       )}
@@ -368,7 +368,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
             <div className="flex items-center justify-between border-b-2 border-red-600 pb-4">
               <div>
                 <h1 className="text-2xl font-bold text-red-700">AGENT ALBATROS</h1>
-                <p className="text-sm">Récapitulatif de dossier — pilote Cotonou</p>
+                <p className="text-sm">Récapitulatif de dossier — pilote Parakou</p>
               </div>
               <div className="flex gap-2 print:hidden">
                 <Button onClick={() => window.print()} className="bg-red-600 hover:bg-red-700"><Printer className="h-4 w-4" /> Imprimer / PDF</Button>

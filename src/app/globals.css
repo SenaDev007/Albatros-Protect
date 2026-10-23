@@ -6,8 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,63 +43,84 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ============================================
-   Agent Albatros — Design system Noir / Rouge
-   Dark premium : fond quasi-noir, rouge albatros
-   ============================================ */
+/* =====================================================
+   Albatros Protect — Design system officiel (§2)
+   Noir profond · Rouge protecteur · Blanc —
+   modes clair ET sombre, adaptés séparément (§2.3)
+   ===================================================== */
 :root {
-  --radius: 0.75rem;
-  --background: #0a0a0c;
-  --foreground: #f4f4f5;
-  --card: #121215;
-  --card-foreground: #f4f4f5;
-  --popover: #151518;
-  --popover-foreground: #f4f4f5;
-  --primary: #e11d2e;
+  --radius: 0.875rem; /* cartes 12–16 px */
+  /* Mode clair */
+  --background: #f4f4f6;
+  --foreground: #191a1f;
+  --card: #ffffff;
+  --card-foreground: #191a1f;
+  --popover: #ffffff;
+  --popover-foreground: #191a1f;
+  --primary: #e53945;
   --primary-foreground: #ffffff;
-  --secondary: #1c1c22;
-  --secondary-foreground: #f4f4f5;
-  --muted: #17171c;
-  --muted-foreground: #a1a1aa;
-  --accent: #232329;
-  --accent-foreground: #fafafa;
-  --destructive: #dc2626;
+  --secondary: #ecedef;
+  --secondary-foreground: #191a1f;
+  --muted: #ecedef;
+  --muted-foreground: #777982;
+  --accent: #e9eaee;
+  --accent-foreground: #191a1f;
+  --destructive: #b91f2b;
   --destructive-foreground: #ffffff;
-  --border: #232329;
-  --input: #232329;
-  --ring: #e11d2e;
-  --chart-1: #e11d2e;
+  --border: #e3e4e8;
+  --input: #e3e4e8;
+  --ring: #e53945;
+  --alert-soft: #fff0f1; /* rouge clair §2.1 */
+  --chart-1: #e53945;
   --chart-2: #f59e0b;
   --chart-3: #8b5cf6;
   --chart-4: #14b8a6;
-  --chart-5: #a1a1aa;
-  --sidebar: #0d0d10;
-  --sidebar-foreground: #f4f4f5;
-  --sidebar-primary: #e11d2e;
+  --chart-5: #777982;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #191a1f;
+  --sidebar-primary: #e53945;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1c1c22;
-  --sidebar-accent-foreground: #f4f4f5;
-  --sidebar-border: #232329;
-  --sidebar-ring: #e11d2e;
+  --sidebar-accent: #ecedef;
+  --sidebar-accent-foreground: #191a1f;
+  --sidebar-border: #e3e4e8;
+  --sidebar-ring: #e53945;
 }
 
 .dark {
-  --background: #0a0a0c;
-  --foreground: #f4f4f5;
-  --card: #121215;
-  --card-foreground: #f4f4f5;
-  --primary: #e11d2e;
+  /* Mode sombre — surfaces et bordures adaptées séparément (§2.3) */
+  --background: #101114;
+  --foreground: #ffffff;
+  --card: #191a1f;
+  --card-foreground: #ffffff;
+  --popover: #1d1e23;
+  --popover-foreground: #ffffff;
+  --primary: #e53945;
   --primary-foreground: #ffffff;
-  --secondary: #1c1c22;
-  --secondary-foreground: #f4f4f5;
-  --muted: #17171c;
-  --muted-foreground: #a1a1aa;
-  --accent: #232329;
-  --accent-foreground: #fafafa;
-  --destructive: #dc2626;
-  --border: #232329;
-  --input: #232329;
-  --ring: #e11d2e;
+  --secondary: #23252b;
+  --secondary-foreground: #f4f4f6;
+  --muted: #1f2026;
+  --muted-foreground: #b8bac3;
+  --accent: #26282f;
+  --accent-foreground: #ffffff;
+  --destructive: #e53945;
+  --destructive-foreground: #ffffff;
+  --border: #26282f;
+  --input: #26282f;
+  --ring: #e53945;
+  --alert-soft: #2a1518;
+  --chart-1: #e53945;
+  --chart-2: #f59e0b;
+  --chart-3: #8b5cf6;
+  --chart-4: #14b8a6;
+  --chart-5: #b8bac3;
+  --sidebar: #141519;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #e53945;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #23252b;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #26282f;
+  --sidebar-ring: #e53945;
 }
 
 html,
@@ -113,11 +134,11 @@ body {
 }
 
 ::selection {
-  background: rgba(225, 29, 46, 0.4);
-  color: #fff;
+  background: rgba(229, 57, 69, 0.35);
+  color: inherit;
 }
 
-/* Barre de défilement fine et sombre */
+/* Barre de défilement fine, adaptée aux deux modes */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -126,67 +147,78 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a31;
+  background: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #e11d2e;
+  background: var(--primary);
 }
 
-/* Effet glow rouge pour les éléments de marque */
+/* Effet de marque (§11 — sobriété) */
 .albatros-glow {
-  text-shadow: 0 0 30px rgba(225, 29, 46, 0.45);
+  text-shadow: 0 0 30px rgba(229, 57, 69, 0.4);
+}
+.dark .albatros-glow {
+  text-shadow: 0 0 34px rgba(229, 57, 69, 0.55);
 }
 .albatros-glow-box {
-  box-shadow: 0 0 0 1px rgba(225, 29, 46, 0.35), 0 8px 40px -12px rgba(225, 29, 46, 0.35);
+  box-shadow: 0 0 0 1px rgba(229, 57, 69, 0.3), 0 8px 40px -12px rgba(229, 57, 69, 0.3);
 }
 
-/* Grille héro de la page publique */
+/* Grille héro (site public) */
 .hero-grid {
   background-image:
-    linear-gradient(rgba(225, 29, 46, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(225, 29, 46, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(229, 57, 69, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(229, 57, 69, 0.055) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 55%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 55%, transparent 100%);
 }
+.dark .hero-grid {
+  background-image:
+    linear-gradient(rgba(229, 57, 69, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(229, 57, 69, 0.07) 1px, transparent 1px);
+}
 
-/* Conteneur carte Leaflet harmonisé au thème */
+/* Carte Leaflet harmonisée aux deux modes */
 .leaflet-container {
-  background: #0d0d10;
+  background: #101114;
   font-family: inherit;
 }
 .leaflet-control-attribution {
-  background: rgba(13, 13, 16, 0.8) !important;
-  color: #71717a !important;
+  background: color-mix(in srgb, var(--card) 85%, transparent) !important;
+  color: var(--muted-foreground) !important;
   font-size: 10px !important;
 }
 .leaflet-control-attribution a {
-  color: #a1a1aa !important;
-}
-.leaflet-bar,
-.leaflet-control-zoom {
-  border-color: #232329 !important;
+  color: var(--muted-foreground) !important;
 }
 .leaflet-bar a {
-  background: #151518 !important;
-  color: #f4f4f5 !important;
-  border-color: #232329 !important;
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
 }
 .leaflet-bar a:hover {
-  background: #e11d2e !important;
+  background: var(--primary) !important;
   color: #fff !important;
 }
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-  background: #151518 !important;
-  color: #f4f4f5 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
 }
 .leaflet-popup-content-wrapper {
-  border: 1px solid #2a2a31;
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
 .leaflet-close-button {
-  color: #a1a1aa !important;
+  color: var(--muted-foreground) !important;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
 }

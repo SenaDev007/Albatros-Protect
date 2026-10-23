@@ -61,9 +61,9 @@ export function ConsoleView() {
 
   if (user?.role !== "admin" && user?.role !== "support") {
     return (
-      <div className="rounded-xl border border-red-900/40 bg-red-950/10 p-6">
+      <div className="rounded-xl border border-red-200 bg-[#FFF0F1] dark:border-red-900/40 dark:bg-red-950/10 p-6">
         <ShieldAlert className="h-6 w-6 text-red-400" />
-        <h2 className="mt-3 font-semibold text-red-300">Accès réservé</h2>
+        <h2 className="mt-3 font-semibold text-[#B91F2B] dark:text-red-300">Accès réservé</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           La console opérationnelle est réservée au personnel habilité. En production, ces rôles sont
           nominatifs, protégés par MFA et séparés des comptes citoyens (§6.4, §13.2).
@@ -141,7 +141,7 @@ export function ConsoleView() {
                         <td className="px-4 py-3"><StatusBadge status={i.status} /></td>
                         <td className="hidden px-4 py-3 text-xs text-muted-foreground sm:table-cell">
                           {i.observationsCount} · {i.eventsCount} évts
-                          {i.policeReportRef && <div className="text-[11px] text-emerald-300">plainte: {i.policeReportRef}</div>}
+                          {i.policeReportRef && <div className="text-[11px] text-emerald-600 dark:text-emerald-300">plainte: {i.policeReportRef}</div>}
                         </td>
                         <td className="px-4 py-3">
                           <Select
@@ -250,8 +250,8 @@ export function ConsoleView() {
                   {Object.entries(stats.consents_by_purpose).map(([p, c]) => (
                     <div key={p} className="rounded-lg bg-secondary/40 px-3 py-2 text-xs">
                       <span className="text-muted-foreground">{p} :</span>{" "}
-                      <strong className="text-emerald-300">{c.granted} actifs</strong>
-                      {c.revoked > 0 && <>, <span className="text-red-300">{c.revoked} révoqués</span></>}
+                      <strong className="text-emerald-600 dark:text-emerald-300">{c.granted} actifs</strong>
+                      {c.revoked > 0 && <>, <span className="text-[#B91F2B] dark:text-red-300">{c.revoked} révoqués</span></>}
                     </div>
                   ))}
                 </div>
@@ -298,7 +298,7 @@ export function ConsoleView() {
                         </td>
                         <td className="hidden max-w-64 truncate px-4 py-2.5 text-xs text-muted-foreground sm:table-cell">{e.reason ?? "—"}</td>
                         <td className="px-4 py-2.5">
-                          <span className={`text-xs ${e.result === "success" ? "text-emerald-300" : "text-red-300"}`}>{e.result}</span>
+                          <span className={`text-xs ${e.result === "success" ? "text-emerald-600 dark:text-emerald-300" : "text-[#B91F2B] dark:text-red-300"}`}>{e.result}</span>
                         </td>
                       </tr>
                     ))}

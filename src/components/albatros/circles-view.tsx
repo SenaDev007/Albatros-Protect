@@ -157,7 +157,7 @@ export function CirclesView() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`rounded-full px-2 py-0.5 text-[10px] ${
-                          m.status === "active" ? "bg-emerald-950/50 text-emerald-300" : "bg-secondary text-muted-foreground"
+                          m.status === "active" ? "bg-emerald-950/50 text-emerald-600 dark:text-emerald-300" : "bg-secondary text-muted-foreground"
                         }`}>
                           {m.status === "active" ? "actif" : m.status === "invited" ? "invité" : m.status}
                         </span>

@@ -209,7 +209,7 @@ function DeviceSheet({ deviceId, onClose }: { deviceId: string; onClose: () => v
   };
 
   const uploadProof = async () => {
-    const name = window.prompt("Nom de la pièce (ex. Facture Samsung Store Cotonou) :");
+    const name = window.prompt("Nom de la pièce (ex. Facture Samsung Store Parakou) :");
     if (!name) return;
     setLoading(true);
     try {
@@ -308,7 +308,7 @@ function DeviceSheet({ deviceId, onClose }: { deviceId: string; onClose: () => v
               ))}
             </div>
             {!device.enrolled && (
-              <p className="mt-3 text-xs text-amber-300/80">
+              <p className="mt-3 text-xs text-amber-600 dark:text-amber-600/80 dark:text-amber-300/80">
                 Enrôlez d&apos;abord l&apos;application pour activer des capacités réelles.
               </p>
             )}
@@ -326,7 +326,7 @@ function DeviceSheet({ deviceId, onClose }: { deviceId: string; onClose: () => v
                   </span>
                   <div className="flex items-center gap-2">
                     <MaskedIdentifier value={i.value} />
-                    {i.verified && <Badge className="bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">vérifié</Badge>}
+                    {i.verified && <Badge className="bg-emerald-600/15 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-600/25">vérifié</Badge>}
                   </div>
                 </div>
               ))}
@@ -399,8 +399,8 @@ function DeviceSheet({ deviceId, onClose }: { deviceId: string; onClose: () => v
           </div>
 
           {/* Suppression */}
-          <div className="rounded-xl border border-red-900/40 bg-red-950/10 p-5">
-            <h3 className="text-sm font-semibold text-red-300">Retirer l&apos;appareil</h3>
+          <div className="rounded-xl border border-red-200 bg-[#FFF0F1] dark:border-red-900/40 dark:bg-red-950/10 p-5">
+            <h3 className="text-sm font-semibold text-[#B91F2B] dark:text-red-300">Retirer l&apos;appareil</h3>
             <p className="mt-1 text-xs text-muted-foreground">
               Pour un appareil vendu, cédé ou retiré de votre inventaire. Les consentements sont révoqués immédiatement,
               l&apos;historique reste auditable (F-014).
@@ -483,7 +483,7 @@ export function DevicesView() {
                     </div>
                   </div>
                   {d.openIncident ? <StatusBadge status={d.openIncident.status} /> : d.enrolled
-                    ? <span className="rounded-full border border-emerald-900/60 bg-emerald-950/40 px-2 py-0.5 text-[11px] text-emerald-300">agent actif</span>
+                    ? <span className="rounded-full border border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 px-2 py-0.5 text-[11px] text-emerald-600 dark:text-emerald-300">agent actif</span>
                     : <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">non enrôlé</span>}
                 </div>
                 <div className="mt-4 flex items-center gap-3">

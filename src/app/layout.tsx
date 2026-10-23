@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "next-themes";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// §4.1 — Police principale : Inter ; technique : JetBrains Mono (identifiants, références)
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Agent Albatros — Retrouvez vos appareils perdus ou volés",
+  title: "Albatros Protect — Protéger. Localiser. Récupérer.",
   description:
-    "Service béninois de recherche et de récupération d'appareils (pilote Cotonou) : enregistrez vos appareils, signalez une perte ou un vol, suivez vos démarches. Localisation honnête : chaque position affiche sa source, son heure et sa précision.",
+    "Plateforme béninoise de protection, de recherche et de récupération d'appareils (pilote Parakou) : préparez vos appareils avant l'incident, signalez une perte ou un vol, consultez les observations disponibles avec leur source, leur heure et leur précision réelle.",
   keywords: [
-    "Agent Albatros",
+    "Albatros Protect",
     "Bénin",
-    "Cotonou",
+    "Parakou",
     "appareil perdu",
     "vol téléphone",
     "IMEI",
@@ -36,11 +37,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="dark" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
+        {/* §2.3 — modes clair et sombre obligatoires, adaptés séparément */}
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Toaster />
         </ThemeProvider>

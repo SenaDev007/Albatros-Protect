@@ -156,7 +156,7 @@ function IncidentWizard({ open, onOpenChange }: { open: boolean; onOpenChange: (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">Quel appareil est concerné ?</p>
                 {devices.length === 0 ? (
-                  <p className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 text-sm text-amber-200">
+                  <p className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 text-sm text-amber-700 dark:text-amber-200">
                     Aucun appareil disponible : tous ont déjà un dossier ouvert, ou votre inventaire est vide.
                     Clôturez le dossier existant ou ajoutez l&apos;appareil dans « Mes appareils ».
                   </p>
@@ -193,7 +193,7 @@ function IncidentWizard({ open, onOpenChange }: { open: boolean; onOpenChange: (
                     <Label>Lieu *</Label>
                     <Input
                       value={locationText} onChange={(e) => setLocationText(e.target.value)}
-                      placeholder="Marché Dantokpa, Cotonou"
+                      placeholder="Grand marché Arzeke, Parakou"
                     />
                   </div>
                 </div>
@@ -206,7 +206,7 @@ function IncidentWizard({ open, onOpenChange }: { open: boolean; onOpenChange: (
                       <Crosshair className="h-3.5 w-3.5" /> Utiliser ma position
                     </Button>
                     {lat !== null && lng !== null && (
-                      <span className="text-xs text-emerald-300">
+                      <span className="text-xs text-emerald-600 dark:text-emerald-300">
                         <MapPin className="mr-1 inline h-3.5 w-3.5" />
                         {lat.toFixed(4)}, {lng.toFixed(4)} — approximative
                       </span>
@@ -232,7 +232,7 @@ function IncidentWizard({ open, onOpenChange }: { open: boolean; onOpenChange: (
                   </div>
                   <div className="space-y-2">
                     <Label>Dépôt de plainte (référence)</Label>
-                    <Input value={policeRef} onChange={(e) => setPoliceRef(e.target.value)} placeholder="PJ-COT-2026-XXXX (si déposée)" />
+                    <Input value={policeRef} onChange={(e) => setPoliceRef(e.target.value)} placeholder="PJ-PK-2026-XXXX (si déposée)" />
                   </div>
                 </div>
               </div>

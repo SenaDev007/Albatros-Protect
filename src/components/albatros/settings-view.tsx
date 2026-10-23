@@ -98,7 +98,7 @@ export function SettingsView() {
           </div>
         </div>
         <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
           Identifiant vérifié par OTP · compte créé le {user?.createdAt ? <FormatDateTime date={user.createdAt} pattern="d MMM yyyy" /> : "—"}
         </div>
       </div>
@@ -200,8 +200,8 @@ export function SettingsView() {
         )}
       </div>
 
-      <div className="rounded-xl border border-red-900/40 bg-red-950/10 p-5">
-        <h3 className="text-sm font-semibold text-red-300">Déconnexion</h3>
+      <div className="rounded-xl border border-red-200 bg-[#FFF0F1] dark:border-red-900/40 dark:bg-red-950/10 p-5">
+        <h3 className="text-sm font-semibold text-[#B91F2B] dark:text-red-300">Déconnexion</h3>
         <p className="mt-1 text-xs text-muted-foreground">
           Termine la session courante sur cet appareil. Vos données restent chiffrées et vos dossiers intacts.
         </p>

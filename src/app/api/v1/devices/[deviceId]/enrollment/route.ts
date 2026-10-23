@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser, ok, apiFail, parseBody, logAudit } from "@/lib/api";
 
-const COTONOU = { lat: 6.3654, lng: 2.3966 };
+const COTONOU = { lat: 9.3433, lng: 2.6089 };
 const jitter = (v: number, d: number) => v + (Math.random() - 0.5) * d;
 
 export async function POST(req: Request, { params }: { params: Promise<{ deviceId: string }> }) {

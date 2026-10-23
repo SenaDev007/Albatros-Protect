@@ -29,11 +29,11 @@ export function AlbatrosMark({ size = 28, className = "" }: { size?: number; cla
       width={size} height={size} viewBox="0 0 48 48" fill="none"
       className={className} aria-hidden="true"
     >
-      {/* Aile d'albatros + arcs de signal */}
-      <path d="M5 37 Q24 37 43 23" stroke="#E11D2E" strokeWidth="3.5" strokeLinecap="round" />
-      <path d="M10 29 Q27 29 40 17" stroke="#E11D2E" strokeWidth="3.5" strokeLinecap="round" opacity="0.5" />
-      <path d="M17 21 Q29 21 36 11" stroke="#E11D2E" strokeWidth="3.5" strokeLinecap="round" opacity="0.25" />
-      <circle cx="43" cy="23" r="3.4" fill="#E11D2E" />
+      {/* Aile d'albatros + bouclier : vigilance et protection (§3.1) */}
+      <path d="M5 37 Q24 37 43 23" stroke="#E53945" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M10 29 Q27 29 40 17" stroke="#E53945" strokeWidth="3.5" strokeLinecap="round" opacity="0.5" />
+      <path d="M17 21 Q29 21 36 11" stroke="#E53945" strokeWidth="3.5" strokeLinecap="round" opacity="0.25" />
+      <circle cx="43" cy="23" r="3.4" fill="#E53945" />
     </svg>
   );
 }
@@ -43,11 +43,11 @@ export function AlbatrosLogo({ size = 30 }: { size?: number }) {
     <div className="flex items-center gap-2.5 select-none">
       <AlbatrosMark size={size} />
       <div className="leading-none">
-        <div className={`font-semibold tracking-wide text-foreground`} style={{ fontSize: size * 0.42 }}>
-          AGENT
+        <div className="font-semibold tracking-wide text-foreground" style={{ fontSize: size * 0.42 }}>
+          ALBATROS
         </div>
         <div className="font-bold tracking-widest text-primary" style={{ fontSize: size * 0.46 }}>
-          ALBATROS
+          PROTECT
         </div>
       </div>
     </div>
@@ -73,12 +73,14 @@ export function SourceBadge({ source, short = false }: { source: string; short?:
   );
 }
 
+// §5.4 — badges de statut : vert confirmé, orange action requise, rouge critique,
+// gris neutre, bleu information. Toujours avec libellé (jamais la couleur seule).
 const TONE_CLASSES: Record<string, string> = {
-  neutral: "border-zinc-700 bg-zinc-800/60 text-zinc-300",
-  info: "border-sky-800/60 bg-sky-950/60 text-sky-300",
-  warn: "border-amber-800/60 bg-amber-950/50 text-amber-300",
-  success: "border-emerald-800/60 bg-emerald-950/50 text-emerald-300",
-  danger: "border-red-800/70 bg-red-950/60 text-red-300",
+  neutral: "border-border bg-secondary text-muted-foreground",
+  info: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/50 dark:text-blue-300",
+  warn: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/50 dark:text-orange-300",
+  success: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-600 dark:text-emerald-300",
+  danger: "border-red-200 bg-[#FFF0F1] text-[#B91F2B] dark:border-red-900/60 dark:bg-red-950/50 dark:text-[#B91F2B] dark:text-red-300",
 };
 
 export function StatusBadge({ status }: { status: string }) {
@@ -105,7 +107,7 @@ export function HonestyNote({ children, variant = "info" }: { children: React.Re
     <div
       className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${
         variant === "warn"
-          ? "border-amber-900/60 bg-amber-950/20 text-amber-200/90"
+          ? "border-amber-300/70 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/20 text-amber-700 dark:text-amber-200/90"
           : "border-border bg-secondary/40 text-muted-foreground"
       }`}
     >
@@ -230,9 +232,9 @@ export function StepUpDialog({ open, onOpenChange, onVerified, title = "Vérific
         {step === "code" && (
           <div className="space-y-4">
             {demoCode && (
-              <div className="rounded-lg border border-amber-900/60 bg-amber-950/30 px-4 py-3 text-sm">
-                <p className="font-medium text-amber-300">Mode pilote — code affiché à l'écran :</p>
-                <p className="font-mono text-xl tracking-[0.4em] text-amber-200">{demoCode}</p>
+              <div className="rounded-lg border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm dark:border-amber-900/60 dark:bg-amber-950/30">
+                <p className="font-medium text-amber-700 dark:text-amber-600 dark:text-amber-300">Mode pilote — code affiché à l'écran :</p>
+                <p className="font-mono text-xl tracking-[0.4em] text-amber-800 dark:text-amber-700 dark:text-amber-200">{demoCode}</p>
               </div>
             )}
             <div className="flex justify-center">

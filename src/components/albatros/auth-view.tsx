@@ -119,10 +119,10 @@ export function AuthView() {
             ) : (
               <div className="space-y-5">
                 {demoCode && (
-                  <div className="rounded-lg border border-amber-900/60 bg-amber-950/30 px-4 py-3 text-sm">
-                    <p className="font-medium text-amber-300">Mode pilote — votre code :</p>
-                    <p className="font-mono text-2xl tracking-[0.4em] text-amber-200">{demoCode}</p>
-                    <p className="mt-1 text-xs text-amber-200/70">
+                  <div className="rounded-lg border border-amber-300/70 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30 px-4 py-3 text-sm">
+                    <p className="font-medium text-amber-600 dark:text-amber-300">Mode pilote — votre code :</p>
+                    <p className="font-mono text-2xl tracking-[0.4em] text-amber-700 dark:text-amber-200">{demoCode}</p>
+                    <p className="mt-1 text-xs text-amber-700/70 dark:text-amber-700 dark:text-amber-200/70">
                       En production, ce code arrive par SMS ou email et n&apos;est jamais affiché ici.
                     </p>
                   </div>
