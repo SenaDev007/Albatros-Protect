@@ -1,4 +1,5 @@
 // Agent Albatros — authentification (OTP téléphone/email, F-001/F-002)
+// Deux liens dédiés : #/connexion et #/inscription (même flux OTP vérifié)
 "use client";
 
 import { useState } from "react";
@@ -14,13 +15,14 @@ import { ArrowLeft, Loader2, Smartphone, Mail, ShieldCheck } from "lucide-react"
 import type { SessionUser } from "./types";
 
 export function AuthView() {
-  const { setView, setSessionUser } = useAlbatros();
+  const { setView, setSessionUser, authIntent } = useAlbatros();
   const { toast } = useToast();
   const [step, setStep] = useState<"identifier" | "code">("identifier");
   const [identifier, setIdentifier] = useState("");
   const [code, setCode] = useState("");
   const [demoCode, setDemoCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const isSignup = authIntent === "signup";
 
   const start = async () => {
     if (identifier.trim().length < 5) {
@@ -67,21 +69,39 @@ export function AuthView() {
   const isEmail = identifier.includes("@");
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="hero-grid flex flex-1 flex-col items-center justify-center px-6 py-12">
+    <div className="flex min-h-screen flex-col bg-background">
+      {/* Bouton retour — sortie explicite vers l'accueil public */}
+      <div className="mx-auto w-full max-w-md px-6 pt-6">
+        <Button
+          variant="ghost" size="sm"
+          onClick={() => setView("landing")}
+          className="-ml-2 gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour à l&apos;accueil
+        </Button>
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-12 pt-2">
         <div className="w-full max-w-md">
-          <div className="mb-8 flex flex-col items-center gap-4">
-            <button onClick={() => setView("landing")} className="transition-transform hover:scale-105">
+          <div className="mb-8 flex justify-center">
+            <button onClick={() => setView("landing")} className="transition-transform hover:scale-105" aria-label="Retour à l'accueil">
               <AlbatrosLogo size={38} />
             </button>
-            <p className="text-sm text-muted-foreground">
-              {step === "identifier"
-                ? "Connexion ou création de compte avec un identifiant vérifiable"
-                : `Code envoyé à ${identifier}`}
-            </p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-8 albatros-glow-box">
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-2xl">
+            <div className="mb-6">
+              <h1 className="text-xl font-bold tracking-tight">
+                {isSignup ? "Créer un compte" : "Connexion"}
+              </h1>
+              <p className="mt-1.5 text-sm leading-relaxed text-foreground/75">
+                {isSignup
+                  ? "Deux minutes suffisent : un identifiant vérifiable, aucun mot de passe à retenir."
+                  : "Reprenez là où vous en étiez avec un identifiant vérifiable."}
+              </p>
+            </div>
+
             {step === "identifier" ? (
               <div className="space-y-5">
                 <div className="space-y-2">
@@ -92,7 +112,7 @@ export function AuthView() {
                       : <Smartphone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />}
                     <Input
                       id="identifier"
-                      className="pl-10 h-12 bg-secondary/50"
+                      className="h-12 bg-secondary/50"
                       placeholder="+229 97 00 00 01"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
@@ -100,7 +120,7 @@ export function AuthView() {
                       autoComplete="tel"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs leading-relaxed text-foreground/70">
                     Un code à 6 chiffres valide votre identifiant. Aucun mot de passe à retenir — et les
                     secrets de récupération ne sont jamais affichés en clair.
                   </p>
@@ -109,20 +129,25 @@ export function AuthView() {
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   Recevoir le code
                 </Button>
-                <button
-                  onClick={() => setIdentifier("+22997000001")}
-                  className="mx-auto block text-xs text-primary underline-offset-2 hover:underline"
-                >
-                  Utiliser le compte de démonstration (+22997000001)
-                </button>
+                <div className="flex flex-col items-center gap-3 border-t border-border pt-4">
+                  <button
+                    onClick={() => setIdentifier("+22997000001")}
+                    className="text-xs text-primary underline-offset-2 hover:underline"
+                  >
+                    Utiliser le compte de démonstration (+22997000001)
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="space-y-5">
+                <p className="text-sm text-foreground/75">
+                  Code envoyé à <strong className="text-foreground">{identifier}</strong>
+                </p>
                 {demoCode && (
-                  <div className="rounded-lg border border-amber-300/70 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30 px-4 py-3 text-sm">
+                  <div className="rounded-lg border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm dark:border-amber-900/60 dark:bg-amber-950/30">
                     <p className="font-medium text-amber-600 dark:text-amber-300">Mode pilote — votre code :</p>
                     <p className="font-mono text-2xl tracking-[0.4em] text-amber-700 dark:text-amber-200">{demoCode}</p>
-                    <p className="mt-1 text-xs text-amber-700/70 dark:text-amber-700 dark:text-amber-200/70">
+                    <p className="mt-1 text-xs text-amber-700/70 dark:text-amber-200/70">
                       En production, ce code arrive par SMS ou email et n&apos;est jamais affiché ici.
                     </p>
                   </div>
@@ -154,7 +179,25 @@ export function AuthView() {
             )}
           </div>
 
-          <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
+          <div className="mt-6 text-center text-xs">
+            {isSignup ? (
+              <p className="text-muted-foreground">
+                Déjà un compte ?{" "}
+                <button onClick={() => setView("auth", { intent: "login" })} className="font-medium text-primary hover:underline">
+                  Se connecter
+                </button>
+              </p>
+            ) : (
+              <p className="text-muted-foreground">
+                Pas encore de compte ?{" "}
+                <button onClick={() => setView("auth", { intent: "signup" })} className="font-medium text-primary hover:underline">
+                  Créer un compte
+                </button>
+              </p>
+            )}
+          </div>
+
+          <p className="mt-4 text-center text-[11px] leading-relaxed text-muted-foreground">
             En continuant, vous acceptez la notice de confidentialité du service pilote.
             Les données de localisation sont traitées comme sensibles conformément au Code du numérique
             béninois (Loi n° 2017-20), sous réserve des formalités APDP applicables.

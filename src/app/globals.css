@@ -154,30 +154,30 @@ body {
   background: var(--primary);
 }
 
-/* Effet de marque (§11 — sobriété) */
+/* Effet de marque (§11 — sobriété) — halo discret, la lisibilité prime */
 .albatros-glow {
-  text-shadow: 0 0 30px rgba(229, 57, 69, 0.4);
+  text-shadow: 0 0 22px rgba(229, 57, 69, 0.14);
 }
 .dark .albatros-glow {
-  text-shadow: 0 0 34px rgba(229, 57, 69, 0.55);
+  text-shadow: 0 0 26px rgba(229, 57, 69, 0.2);
 }
 .albatros-glow-box {
   box-shadow: 0 0 0 1px rgba(229, 57, 69, 0.3), 0 8px 40px -12px rgba(229, 57, 69, 0.3);
 }
 
-/* Grille héro (site public) */
+/* Grille héro (site public) — très discrète pour ne pas gêner la lecture */
 .hero-grid {
   background-image:
-    linear-gradient(rgba(229, 57, 69, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(229, 57, 69, 0.055) 1px, transparent 1px);
+    linear-gradient(rgba(229, 57, 69, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(229, 57, 69, 0.04) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 55%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 55%, transparent 100%);
 }
 .dark .hero-grid {
   background-image:
-    linear-gradient(rgba(229, 57, 69, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(229, 57, 69, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(229, 57, 69, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(229, 57, 69, 0.05) 1px, transparent 1px);
 }
 
 /* Carte Leaflet harmonisée aux deux modes */

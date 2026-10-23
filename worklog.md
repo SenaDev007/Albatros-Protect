@@ -106,3 +106,27 @@ Stage Summary:
 - Le vrai logo (emblème bouclier officiel transparent + lockup fidèle) est en place partout : loading, navbar (desktop + mobile), footer, CTA, auth, sidebar
 - Asset réutilisable public/brand/albatros-emblem.png + script régénérable dans scripts/
 - Mode sombre : halo rouge subtil autour de l'écu pour la lisibilité ; mode clair : rendu natif
+
+---
+Task ID: 10
+Agent: main (Z.ai)
+Task: Corrections UX remontées par l'utilisateur : lisibilité héros, espacements, footer professionnel, pages connexion/inscription (visibilité, bouton retour, liens dédiés)
+
+Work Log:
+- Diagnostic VLM des 5 problèmes : halo rouge trop fort sur le titre héros (text-shadow 0.55), vide énorme héros→« Comment ça marche » (flex-1 étirait la zone), note statut pilote collée aux cartes partenaires (0 marge), footer une ligne sans hiérarchie, page auth : grille bruitée + carte peu contrastée + aucun bouton retour + bouton navigateur inopérant (SPA sans historique)
+- globals.css : albatros-glow adouci (0.4/0.55 → 0.14/0.2), hero-grid réduit (0.055/0.07 → 0.04/0.05)
+- landing.tsx : hero-grid sans flex-1 (le vide disparaît, « Comment ça marche » revient à ~1036 px), paddings resserrés, textes héros passés en foreground/80 et /60 (contraste), gap 12→10 ; HonestyNote passe à mt-8 (détachée des cartes)
+- HonestyNote (shared.tsx) : accepte className
+- Footer professionnel : 4 colonnes (Marque + badge pilote, Navigation, Légal & conformité, Pilote) + barre inférieure © / signature / localisation — liens réels uniquement (ancres + actions auth), aucune fausse page
+- auth-view.tsx : grille supprimée (fond net), carte shadow-2xl bien détachée, bouton « Retour à l'accueil » explicite, titres par intention (« Connexion » / « Créer un compte »), bascule connexion↔inscription, textes d'aide en foreground/70-75, « Code envoyé à X » conservé à l'étape OTP
+- Routage par hash (store.ts réécrit) : chaque vue a un lien partageable — #/connexion, #/inscription, #/tableau-de-bord, #/appareils, #/preparation, #/incidents, #/incident/<id>, #/carte, #/cercles, #/demarches, #/notifications, #/aide, #/parametres, #/console ; pushState à chaque navigation, popstate restaure la vue → bouton retour du navigateur pleinement fonctionnel ; état initial déduit du lien d'arrivée ; logout → replace vers l'accueil
+- page.tsx : vue protégée + non connecté → AuthView (lien partagé #/carte → invitation à se connecter) ; connecté + vue publique → redirection dashboard (replace)
+- CTAs avec intention : « Se connecter » → #/connexion, « Créer un compte » → #/inscription
+- Tests fonctionnels agent-browser : lien → #/connexion, back → accueil ; #/connexion direct → « Connexion » ; #/inscription direct → « Créer un compte » ; login démo → #/tableau-de-bord ; sidebar → #/appareils ; back → dashboard restauré (« Bonjour Awa »)
+- Validation VLM 9/9 GO : héros sombre/clair, transition, partenaires, footer sombre/clair, connexion, inscription
+- Build production ✓ (21/21 pages), dev server 200, zéro erreur console
+
+Stage Summary:
+- Héros lisible, espacements resserrés, note pilote détachée, footer 4 colonnes professionnel
+- Pages connexion et inscription distinctes, visibles, avec bouton retour fonctionnel
+- Navigation SPA désormais avec vrais liens partageables et historique navigateur opérationnel

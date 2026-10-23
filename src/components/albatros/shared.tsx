@@ -111,14 +111,16 @@ export function FreshnessTag({ capturedAt, accuracyM }: { capturedAt: string; ac
 }
 
 // ---------- Transparence ----------
-export function HonestyNote({ children, variant = "info" }: { children: React.ReactNode; variant?: "info" | "warn" }) {
+export function HonestyNote({ children, variant = "info", className = "" }: {
+  children: React.ReactNode; variant?: "info" | "warn"; className?: string;
+}) {
   return (
     <div
       className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${
         variant === "warn"
           ? "border-amber-300/70 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/20 text-amber-700 dark:text-amber-200/90"
           : "border-border bg-secondary/40 text-muted-foreground"
-      }`}
+      } ${className}`}
     >
       <Info className="h-4 w-4 mt-0.5 shrink-0" />
       <div className="leading-relaxed">{children}</div>

@@ -2,7 +2,7 @@
 "use client";
 
 import { useAlbatros } from "./store";
-import { AlbatrosLogo, AlbatrosMark, HonestyNote } from "./shared";
+import { AlbatrosLogo, HonestyNote } from "./shared";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {
@@ -15,7 +15,7 @@ export function LandingView() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="hero-grid relative flex-1">
+      <div className="hero-grid relative">
         {/* En-tête */}
         <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
           <AlbatrosLogo />
@@ -25,16 +25,16 @@ export function LandingView() {
             <a href="#partenaires" className="hover:text-foreground transition-colors">Partenaires</a>
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => setView("auth")}>Se connecter</Button>
-            <Button onClick={() => setView("auth")} className="bg-primary hover:bg-primary/90">
+            <Button variant="ghost" onClick={() => setView("auth", { intent: "login" })}>Se connecter</Button>
+            <Button onClick={() => setView("auth", { intent: "signup" })} className="bg-primary hover:bg-primary/90">
               Créer un compte
             </Button>
           </div>
         </header>
 
         {/* Héro */}
-        <section className="mx-auto w-full max-w-6xl px-6 pb-16 pt-10 md:pt-20">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
+        <section className="mx-auto w-full max-w-6xl px-6 pb-10 pt-8 md:pb-14 md:pt-14">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
                 <MapPin className="h-3.5 w-3.5" />
@@ -43,25 +43,25 @@ export function LandingView() {
               <h1 className="albatros-glow mt-6 max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
                 Protéger. Localiser. <span className="text-primary">Récupérer.</span>
               </h1>
-              <p className="mt-3 text-sm font-medium uppercase tracking-[0.3em] text-muted-foreground">
+              <p className="mt-3 text-sm font-medium uppercase tracking-[0.3em] text-foreground/60">
                 Albatros Protect
               </p>
-              <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/80 md:text-lg">
                 Albatros Protect aide les citoyens à préparer leurs appareils avant l&apos;incident, à signaler
                 rapidement une perte ou un vol, et à suivre leurs démarches auprès des opérateurs et des
                 autorités — avec une localisation <strong className="text-foreground">honnête</strong> : chaque
                 position affiche sa source, son heure et sa précision réelle. Jamais de promesse impossible.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Button size="lg" onClick={() => setView("auth")} className="bg-primary hover:bg-primary/90">
+                <Button size="lg" onClick={() => setView("auth", { intent: "signup" })} className="bg-primary hover:bg-primary/90">
                   Protéger mes appareils
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => setView("auth")}>
+                <Button size="lg" variant="outline" onClick={() => setView("auth", { intent: "login" })}>
                   J&apos;ai déjà un compte
                 </Button>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">
+              <p className="mt-4 text-xs text-foreground/60">
                 Compte de démonstration : <code className="rounded bg-secondary px-1.5 py-0.5">+22997000001</code>{" "}
                 — le code de vérification s&apos;affiche à l&apos;écran en mode pilote.
               </p>
@@ -85,7 +85,7 @@ export function LandingView() {
         </section>
 
         {/* Chiffres clés */}
-        <section className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-4 px-6 pb-16 md:grid-cols-4">
+        <section className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-4 px-6 pb-12 md:grid-cols-4 md:pb-16">
           {[
             { v: "5", l: "familles de plateformes couvertes (Android, iOS, Windows, macOS, Linux)" },
             { v: "4", l: "types de sources de position distinguées avec leur incertitude" },
@@ -212,7 +212,7 @@ export function LandingView() {
             </div>
           ))}
         </div>
-        <HonestyNote variant="warn">
+        <HonestyNote variant="warn" className="mt-8">
           <strong>Statut pilote :</strong> ce portail utilise des données de démonstration. Les parcours
           opérateurs et autorités sont inactifs (aucune convention signée à ce jour), les positions affichées
           sont simulées et le code de vérification s&apos;affiche à l&apos;écran. Aucune donnée réelle de citoyen
@@ -234,23 +234,83 @@ export function LandingView() {
             L&apos;inscription prend deux minutes : un numéro vérifiable suffit. Vous gardez le contrôle total
             sur chaque fonctionnalité.
           </p>
-          <Button size="lg" onClick={() => setView("auth")} className="mt-6 bg-primary hover:bg-primary/90">
+          <Button size="lg" onClick={() => setView("auth", { intent: "signup" })} className="mt-6 bg-primary hover:bg-primary/90">
             Créer mon compte
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </section>
 
-      {/* Pied de page (sticky) */}
+      {/* Pied de page */}
       <footer className="mt-auto border-t border-border bg-card/40">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-8 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <AlbatrosMark size={22} />
-            <span>Albatros Protect — pilote Parakou, République du Bénin</span>
+        <div className="mx-auto w-full max-w-6xl px-6 py-12 md:py-14">
+          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr]">
+            {/* Marque */}
+            <div>
+              <AlbatrosLogo size={26} />
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
+                Préparer, signaler et suivre la perte ou le vol de vos appareils — avec une
+                localisation honnête : source, heure et précision réelles pour chaque position.
+              </p>
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-300/60 bg-amber-50/70 px-3 py-1 text-[11px] font-medium text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200/90">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Service en pilote — données de démonstration
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground/70">Navigation</h4>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li><a href="#fonctionnement" className="text-muted-foreground transition-colors hover:text-foreground">Fonctionnement</a></li>
+                <li><a href="#transparence" className="text-muted-foreground transition-colors hover:text-foreground">Transparence</a></li>
+                <li><a href="#partenaires" className="text-muted-foreground transition-colors hover:text-foreground">Partenaires</a></li>
+                <li>
+                  <button onClick={() => setView("auth", { intent: "login" })} className="text-muted-foreground transition-colors hover:text-foreground">
+                    Se connecter
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView("auth", { intent: "signup" })} className="text-muted-foreground transition-colors hover:text-foreground">
+                    Créer un compte
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Légal & conformité */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground/70">Légal &amp; conformité</h4>
+              <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
+                <li>Code du numérique — Loi n° 2017-20</li>
+                <li>Formalités APDP en cours</li>
+                <li>Notice de confidentialité (pilote)</li>
+                <li>Aucune donnée réelle de citoyen traitée</li>
+              </ul>
+            </div>
+
+            {/* Pilote */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground/70">Pilote</h4>
+              <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  Parakou, République du Bénin
+                </li>
+                <li>Opérateurs et autorités : en discussion, aucune transmission sans convention signée.</li>
+                <li>
+                  Compte de démonstration :{" "}
+                  <code className="rounded bg-secondary px-1.5 py-0.5 text-xs">+22997000001</code>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-5">
-            <span>Code du numérique (Loi n° 2017-20) · formalités APDP en cours</span>
-            <span>© {new Date().getFullYear()} Albatros Protect</span>
+
+          {/* Barre inférieure */}
+          <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+            <span>© {new Date().getFullYear()} Albatros Protect — Tous droits réservés</span>
+            <span className="font-medium tracking-wider text-foreground/70">Protéger. Localiser. Récupérer.</span>
+            <span>Pilote Parakou · République du Bénin</span>
           </div>
         </div>
       </footer>

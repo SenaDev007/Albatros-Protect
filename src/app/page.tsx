@@ -23,7 +23,7 @@ import { HelpView } from "@/components/albatros/help-view";
 import type { SessionUser } from "@/components/albatros/types";
 
 export default function Page() {
-  const { user, view, focusIncidentId, setSessionUser } = useAlbatros();
+  const { user, view, focusIncidentId, setSessionUser, setView } = useAlbatros();
   const [booted, setBooted] = useState(false);
 
   // Restaure la session existante au chargement
@@ -38,6 +38,14 @@ export default function Page() {
       .finally(() => { if (alive) setBooted(true); });
     return () => { alive = false; };
   }, [setSessionUser]);
+
+  // Utilisateur connecté : les vues publiques redirigent vers le tableau de bord
+  // (replace → l'historique « retour » reste utilisable)
+  useEffect(() => {
+    if (user && (view === "auth" || view === "landing")) {
+      setView("dashboard", { replace: true });
+    }
+  }, [user, view, setView]);
 
   if (!booted) {
     return (
@@ -64,7 +72,8 @@ export default function Page() {
   }
 
   if (!user) {
-    return view === "auth" ? <AuthView /> : <LandingView />;
+    // Lien partagé vers une vue protégée (#/carte…) → invitation à se connecter
+    return view === "landing" ? <LandingView /> : <AuthView />;
   }
 
   return (
