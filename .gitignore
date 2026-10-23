@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -52,3 +53,11 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# runtime / locaux
+.zscripts/dev.pid
+.zscripts/*.log
+db/*.db-journal
+db/*.db-wal
+db/*.db-shm
+.next-service-dist/
