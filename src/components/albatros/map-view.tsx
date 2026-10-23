@@ -16,9 +16,9 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { OBSERVATION_SOURCES, type ObservationSource } from "@/lib/albatros";
-import type { Device, Incident, Observation } from "./types";
+import type { TriangulationOverlay, Device, Incident, Observation } from "./types";
 import {
-  MapPin, Loader2, Layers, Play, Bluetooth, RadioTower, PowerOff, Smartphone, Map as MapIcon,
+  MapPin, Loader2, Layers, Play, Bluetooth, RadioTower, PowerOff, Smartphone, Map as MapIcon, Wifi,
 } from "lucide-react";
 
 const SOURCE_KEYS = Object.keys(OBSERVATION_SOURCES) as ObservationSource[];
@@ -29,14 +29,16 @@ const TILES = {
   light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
 };
 
-function AlbatrosMap({ observations, view, onReady }: {
+function AlbatrosMap({ observations, view, triangulation, onReady }: {
   observations: Observation[];
   view: "plan" | "satellite";
+  triangulation?: TriangulationOverlay | null;
   onReady?: (focus: (lat: number, lng: number, zoom?: number) => void) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const layerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const triLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const tileRef = useRef<import("leaflet").TileLayer | null>(null);
   const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
@@ -54,6 +56,7 @@ function AlbatrosMap({ observations, view, onReady }: {
         { attribution: "&copy; OpenStreetMap &copy; CARTO — démo", subdomains: "abcd", maxZoom: 20 },
       ).addTo(map);
       layerRef.current = L.layerGroup().addTo(map);
+      triLayerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
       setReady(true);
       onReady?.((lat, lng, zoom = 15) => map.flyTo([lat, lng], zoom, { duration: 0.8 }));
@@ -103,12 +106,60 @@ function AlbatrosMap({ observations, view, onReady }: {
           </div>`,
         );
       }
-      if (observations.length) {
+      if (observations.length && !triangulation) {
         const last = observations[0];
         mapRef.current?.flyTo([last.latitude, last.longitude], 13, { duration: 0.6 });
       }
     })();
   }, [observations, ready]);
+
+  // Couche triangulation : ancres radio, cercles de portée, jonctions vers le centre
+  useEffect(() => {
+    (async () => {
+      const L = (await import("leaflet")).default;
+      const layer = triLayerRef.current;
+      if (!L || !layer) return;
+      layer.clearLayers();
+      if (!triangulation) return;
+      const { anchors, center, accuracy_radius_m } = triangulation;
+      for (const a of anchors) {
+        const color = a.kind === "cell" ? "#F59E0B" : "#38BDF8";
+        // Cercle de portée mesuré (distance RSSI) — pointillés
+        L.circle([a.lat, a.lng], {
+          radius: a.distance_m, color, weight: 1.2, opacity: 0.5, dashArray: "5 7",
+          fill: false,
+        }).addTo(layer).bindPopup(
+          `<div style="font-size:12px;line-height:1.5">
+            <strong style="color:${color}">${a.label} (${a.kind === "cell" ? "antenne" : "Wi-Fi"})</strong><br/>
+            RSSI : ${a.rssi} dBm<br/>Distance estimée : ${a.distance_m} m
+          </div>`,
+        );
+        // Marqueur d'ancre
+        L.circleMarker([a.lat, a.lng], {
+          radius: 5, color, weight: 2, fillColor: color, fillOpacity: 0.95, className: "anchor-marker",
+        }).addTo(layer).bindTooltip(`${a.label} · ${a.rssi} dBm`, { direction: "top" });
+        // Jonction ancre → centre estimé
+        L.polyline([[a.lat, a.lng], [center.lat, center.lng]], {
+          color, weight: 1, opacity: 0.4, dashArray: "2 6",
+        }).addTo(layer);
+      }
+      // Zone d'incertitude du résultat
+      L.circle([center.lat, center.lng], {
+        radius: accuracy_radius_m, color: "#F59E0B", weight: 2, opacity: 0.9,
+        fillColor: "#F59E0B", fillOpacity: 0.12,
+      }).addTo(layer).bindPopup(
+        `<div style="font-size:12px;line-height:1.5">
+          <strong style="color:#F59E0B">Position triangulée</strong><br/>
+          ±${accuracy_radius_m} m · résidu RMS ${triangulation.residual_rms_m} m<br/>
+          ${triangulation.method}
+        </div>`,
+      );
+      L.circleMarker([center.lat, center.lng], {
+        radius: 7, color: "#F59E0B", weight: 3, fillColor: "#F59E0B", fillOpacity: 0.7,
+      }).addTo(layer).bindTooltip("Position triangulée", { direction: "top", permanent: true });
+      mapRef.current?.flyTo([center.lat, center.lng], 14, { duration: 0.9 });
+    })();
+  }, [triangulation, ready]);
 
   return (
     <div className="relative h-[380px] overflow-hidden rounded-xl border border-border md:h-[540px]">
@@ -133,6 +184,7 @@ export function MapView() {
   const [sources, setSources] = useState<string[]>([...SOURCE_KEYS]);
   const [hours, setHours] = useState("72");
   const [observations, setObservations] = useState<Observation[]>([]);
+  const [triangulation, setTriangulation] = useState<TriangulationOverlay | null>(null);
   const [view, setView] = useState<"plan" | "satellite">("plan");
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -207,15 +259,16 @@ export function MapView() {
     setBusy(true);
     try {
       const res = await api.radioEstimate(device.id, 4 + Math.floor(Math.random() * 4), 2);
+      setTriangulation(res.triangulation ?? null);
       toast({
-        title: "Estimation Wi-Fi/cellulaire calculée",
-        description: `Rayon ±${res.observation.accuracyRadiusM} m · quota restant aujourd'hui : ${res.quota_remaining_today}. Entrées brutes purgées.`,
+        title: "Triangulation Wi-Fi/cellulaire calculée",
+        description: `Position estimée à ±${res.observation.accuracyRadiusM} m (${res.triangulation?.anchors?.length ?? 0} ancres · résidu RMS ${res.triangulation?.residual_rms_m ?? "?"} m) · quota restant : ${res.quota_remaining_today}. Entrées brutes purgées.`,
       });
       focusRef.current?.(res.observation.latitude, res.observation.longitude, 15);
       await load(); refresh();
     } catch (e) {
       toast({
-        title: "Estimation impossible",
+        title: "Triangulation impossible",
         description: e instanceof ApiError ? e.message : "Erreur",
         variant: "destructive",
       });
@@ -260,6 +313,7 @@ export function MapView() {
           <AlbatrosMap
             observations={observations}
             view={view}
+            triangulation={triangulation}
             onReady={(focus) => { focusRef.current = focus; }}
           />
           {loading && (
@@ -270,6 +324,20 @@ export function MapView() {
           {observations.length > 0 && (
             <div className="absolute bottom-3 left-3 rounded-lg border border-border bg-background/90 px-3 py-1.5 text-xs text-muted-foreground">
               Dernière observation : <FreshnessTag capturedAt={observations[0].capturedAt} accuracyM={observations[0].accuracyRadiusM} />
+            </div>
+          )}
+          {triangulation && (
+            <div className="absolute right-3 top-3 rounded-lg border border-amber-500/40 bg-background/95 px-3 py-2 text-[11px] leading-relaxed shadow-lg">
+              <div className="flex items-center gap-1.5 font-semibold text-amber-500">
+                <RadioTower className="h-3.5 w-3.5" /> Triangulation active
+              </div>
+              <div className="mt-1 text-muted-foreground">
+                {triangulation.anchors.filter((a) => a.kind === "cell").length} antennes · {""}
+                {triangulation.anchors.filter((a) => a.kind === "wifi").length} points Wi-Fi → ±{triangulation.accuracy_radius_m} m
+              </div>
+              <button className="mt-1 text-primary hover:underline" onClick={() => setTriangulation(null)}>
+                Masquer le tracé
+              </button>
             </div>
           )}
         </div>
@@ -332,8 +400,8 @@ export function MapView() {
               </div>
               <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
                 Sans application mobile installée, générez des observations fictives pour voir les flux réels :
-                position native, détection BLE, estimation Wi-Fi/cellulaire (adaptateur Google Geolocation côté
-                serveur, simulation au pilote), perte de contact.
+                position native, détection BLE, triangulation Wi-Fi/cellulaire (moteur Gauss-Newton côté
+                serveur, simulation pilote), perte de contact.
               </p>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Button size="sm" variant="outline" onClick={() => simulate("native_position")} disabled={busy || !device.enrolled}>
@@ -342,10 +410,10 @@ export function MapView() {
                 <Button size="sm" variant="outline" onClick={() => simulate("ble_detection")} disabled={busy || !device.bleEnabled}>
                   <Bluetooth className="h-3.5 w-3.5" /> Détection
                 </Button>
-                <Button size="sm" variant="outline" onClick={radioEstimate} disabled={busy || !device.enrolled}>
-                  <RadioTower className="h-3.5 w-3.5" /> Estimation
+                <Button size="sm" variant="outline" onClick={radioEstimate} disabled={busy || !device.enrolled} className="col-span-2 border-amber-500/40 hover:border-amber-500/70">
+                  <RadioTower className="h-3.5 w-3.5" /> Triangulation Wi-Fi/cellulaire
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => simulate("unreachable")} disabled={busy}>
+                <Button size="sm" variant="outline" onClick={() => simulate("unreachable")} disabled={busy} className="col-span-2">
                   <PowerOff className="h-3.5 w-3.5" /> Non joignable
                 </Button>
               </div>
@@ -354,6 +422,34 @@ export function MapView() {
                   Enrôlez l&apos;agent de cet appareil (Préparation) pour activer les simulations de position.
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Détail de la dernière triangulation */}
+          {triangulation && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                  <RadioTower className="h-3.5 w-3.5" /> Détail de la triangulation
+                </div>
+                <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                  ±{triangulation.accuracy_radius_m} m
+                </span>
+              </div>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">{triangulation.method} · résidu RMS {triangulation.residual_rms_m} m</p>
+              <div className="mt-3 max-h-44 space-y-1.5 overflow-y-auto pr-1">
+                {triangulation.anchors.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between gap-2 rounded-lg bg-secondary/40 px-2.5 py-1.5 text-[11px]">
+                    <span className="flex items-center gap-1.5">
+                      {a.kind === "cell"
+                        ? <RadioTower className="h-3 w-3 text-amber-500" />
+                        : <Wifi className="h-3 w-3 text-sky-400" />}
+                      {a.label}
+                    </span>
+                    <span className="font-mono text-muted-foreground">{a.rssi} dBm · {a.distance_m} m</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

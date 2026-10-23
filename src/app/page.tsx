@@ -20,6 +20,7 @@ import { ConsoleView } from "@/components/albatros/console-view";
 import { NotificationsView } from "@/components/albatros/notifications-view";
 import { StepsView } from "@/components/albatros/steps-view";
 import { HelpView } from "@/components/albatros/help-view";
+import { BackOfficeApp } from "@/components/albatros/backoffice";
 import type { SessionUser } from "@/components/albatros/types";
 
 export default function Page() {
@@ -40,7 +41,8 @@ export default function Page() {
   }, [setSessionUser]);
 
   // Utilisateur connecté : les vues publiques redirigent vers le tableau de bord
-  // (replace → l'historique « retour » reste utilisable)
+  // (replace → l'historique « retour » reste utilisable). Le back-office reste
+  // accessible directement pour les comptes habilités (lien partagé #/back-office/…).
   useEffect(() => {
     if (user && (view === "auth" || view === "landing")) {
       setView("dashboard", { replace: true });
@@ -72,8 +74,13 @@ export default function Page() {
   }
 
   if (!user) {
-    // Lien partagé vers une vue protégée (#/carte…) → invitation à se connecter
+    // Lien partagé vers une vue protégée (#/carte, #/back-office/gsm…) → invitation à se connecter
     return view === "landing" ? <LandingView /> : <AuthView />;
+  }
+
+  // Back-office : coquille dédiée, distincte de l'espace citoyen
+  if (view === "backoffice") {
+    return <BackOfficeApp />;
   }
 
   return (

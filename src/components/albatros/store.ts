@@ -1,4 +1,4 @@
-// Agent Albatros — état global (navigation SPA + session + routage par hash)
+// Albatros Protect — état global (navigation SPA + session + routage par hash)
 // Chaque vue possède un lien partageable (#/connexion, #/inscription, #/carte…),
 // le bouton « retour » du navigateur fonctionne via history/popstate.
 import { create } from "zustand";
@@ -18,13 +18,17 @@ export type View =
   | "notifications"
   | "help"
   | "settings"
-  | "console";
+  | "console"
+  | "backoffice";
+
+export type BoSpace = "system" | "gsm" | "police";
 
 export type AuthIntent = "login" | "signup";
 
 export interface SetViewOpts {
   intent?: AuthIntent;
   replace?: boolean;
+  space?: BoSpace;
 }
 
 // --- Correspondances vue ↔ chemin (hash) ---
@@ -40,34 +44,49 @@ const VIEW_TO_PATH: Partial<Record<View, string>> = {
   help: "aide",
   settings: "parametres",
   console: "console",
+  backoffice: "back-office",
 };
 const PATH_TO_VIEW: Record<string, View> = Object.fromEntries(
   Object.entries(VIEW_TO_PATH).map(([v, p]) => [p, v as View]),
 ) as Record<string, View>;
 
-function hashToState(hash: string): { view: View; intent: AuthIntent; incidentId: string | null } {
+const BO_SPACES: BoSpace[] = ["system", "gsm", "police"];
+
+function hashToState(hash: string): {
+  view: View; intent: AuthIntent; incidentId: string | null; boSpace: BoSpace;
+} {
   const h = decodeURIComponent(hash).replace(/^#\/?/, "").replace(/\/+$/, "");
-  if (h === "inscription") return { view: "auth", intent: "signup", incidentId: null };
-  if (h === "connexion") return { view: "auth", intent: "login", incidentId: null };
+  if (h === "inscription") return { view: "auth", intent: "signup", incidentId: null, boSpace: "system" };
+  if (h === "connexion") return { view: "auth", intent: "login", incidentId: null, boSpace: "system" };
   if (h.startsWith("incident/")) {
-    return { view: "incident", intent: "login", incidentId: h.slice("incident/".length) || null };
+    return { view: "incident", intent: "login", incidentId: h.slice("incident/".length) || null, boSpace: "system" };
   }
-  if (h && PATH_TO_VIEW[h]) return { view: PATH_TO_VIEW[h], intent: "login", incidentId: null };
+  if (h === "back-office" || h.startsWith("back-office/")) {
+    const space = h.slice("back-office/".length) as BoSpace;
+    return {
+      view: "backoffice",
+      intent: "login",
+      incidentId: null,
+      boSpace: BO_SPACES.includes(space) ? space : "system",
+    };
+  }
+  if (h && PATH_TO_VIEW[h]) return { view: PATH_TO_VIEW[h], intent: "login", incidentId: null, boSpace: "system" };
   // « », « #/ », ancres d'ancrage (#fonctionnement…) → accueil public
-  return { view: "landing", intent: "login", incidentId: null };
+  return { view: "landing", intent: "login", incidentId: null, boSpace: "system" };
 }
 
-function stateToHash(view: View, intent: AuthIntent, incidentId: string | null): string {
+function stateToHash(view: View, intent: AuthIntent, incidentId: string | null, boSpace: BoSpace): string {
   if (view === "landing") return "#/";
   if (view === "auth") return intent === "signup" ? "#/inscription" : "#/connexion";
   if (view === "incident") return incidentId ? `#/incident/${encodeURIComponent(incidentId)}` : "#/incidents";
+  if (view === "backoffice") return `#/back-office/${boSpace}`;
   return `#/${VIEW_TO_PATH[view] ?? ""}`.replace(/\/$/, "");
 }
 
 /** Met à jour l'URL (push pour une navigation, replace pour une redirection). */
-function syncUrl(view: View, intent: AuthIntent, incidentId: string | null, replace: boolean) {
+function syncUrl(view: View, intent: AuthIntent, incidentId: string | null, boSpace: BoSpace, replace: boolean) {
   if (typeof window === "undefined") return;
-  const hash = stateToHash(view, intent, incidentId);
+  const hash = stateToHash(view, intent, incidentId, boSpace);
   if (window.location.hash === hash) return;
   const url = `${window.location.pathname}${window.location.search}${hash === "#/" ? "" : hash}`;
   if (replace) window.history.replaceState(window.history.state, "", url);
@@ -78,7 +97,7 @@ function syncUrl(view: View, intent: AuthIntent, incidentId: string | null, repl
 const initial =
   typeof window !== "undefined"
     ? hashToState(window.location.hash)
-    : { view: "landing" as View, intent: "login" as AuthIntent, incidentId: null as string | null };
+    : { view: "landing" as View, intent: "login" as AuthIntent, incidentId: null as string | null, boSpace: "system" as BoSpace };
 
 interface AlbatrosState {
   user: SessionUser | null;
@@ -86,9 +105,11 @@ interface AlbatrosState {
   authIntent: AuthIntent;
   focusIncidentId: string | null;
   focusDeviceId: string | null;
+  boSpace: BoSpace;
   refreshKey: number;
   setSessionUser: (u: SessionUser | null) => void;
   setView: (v: View, opts?: SetViewOpts) => void;
+  setBoSpace: (s: BoSpace) => void;
   openIncident: (id: string) => void;
   openDevice: (id: string, view?: View) => void;
   refresh: () => void;
@@ -101,21 +122,28 @@ export const useAlbatros = create<AlbatrosState>((set) => ({
   authIntent: initial.intent,
   focusIncidentId: initial.incidentId,
   focusDeviceId: null,
+  boSpace: initial.boSpace,
   refreshKey: 0,
   setSessionUser: (u) => set({ user: u }),
   setView: (v, opts) => {
     const s = useAlbatros.getState();
     const intent = v === "auth" ? (opts?.intent ?? s.authIntent ?? "login") : s.authIntent;
-    set({ view: v, authIntent: intent, focusIncidentId: null, focusDeviceId: null });
-    syncUrl(v, intent, null, opts?.replace ?? false);
+    const space = v === "backoffice" ? (opts?.space ?? s.boSpace) : s.boSpace;
+    set({ view: v, authIntent: intent, focusIncidentId: null, focusDeviceId: null, boSpace: space });
+    syncUrl(v, intent, null, space, opts?.replace ?? false);
+  },
+  setBoSpace: (space) => {
+    const s = useAlbatros.getState();
+    set({ boSpace: space });
+    if (s.view === "backoffice") syncUrl("backoffice", s.authIntent, null, space, false);
   },
   openIncident: (id) => {
     set({ view: "incident", focusIncidentId: id, focusDeviceId: null });
-    syncUrl("incident", "login", id, false);
+    syncUrl("incident", "login", id, "system", false);
   },
   openDevice: (id, view = "devices") => {
     set({ view, focusDeviceId: id, focusIncidentId: null });
-    syncUrl(view, "login", null, false);
+    syncUrl(view, "login", null, "system", false);
   },
   refresh: () => set((s) => ({ refreshKey: s.refreshKey + 1 })),
   logout: async () => {
@@ -124,8 +152,8 @@ export const useAlbatros = create<AlbatrosState>((set) => ({
     } catch {
       /* la session expire localement quoi qu'il arrive */
     }
-    set({ user: null, view: "landing", authIntent: "login", focusIncidentId: null, focusDeviceId: null });
-    syncUrl("landing", "login", null, true);
+    set({ user: null, view: "landing", authIntent: "login", focusIncidentId: null, focusDeviceId: null, boSpace: "system" });
+    syncUrl("landing", "login", null, "system", true);
   },
 }));
 
@@ -138,6 +166,7 @@ if (typeof window !== "undefined") {
       authIntent: next.intent,
       focusIncidentId: next.incidentId,
       focusDeviceId: null,
+      boSpace: next.boSpace,
     });
   });
 }

@@ -61,3 +61,5 @@ db/*.db-journal
 db/*.db-wal
 db/*.db-shm
 .next-service-dist/
+# Snapshot du schéma appliqué à Neon (regénéré par scripts/db_push_neon.ts)
+prisma/.schema-applied.prisma

@@ -10,8 +10,10 @@ Identité visuelle : noir & rouge (dark premium), unicité du service par identi
 |---|---|
 | `src/` | **Application Web** — Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn/ui, Prisma |
 | `src/app/api/v1/` | **API REST** partagée : auth OTP, appareils, incidents, observations (localisation/radio/BLE), cercles, consentements, partages, audit, console opérateur |
-| `prisma/` | Schéma de données Prisma (SQLite en pilote) |
-| `db/custom.db` | Base SQLite de démarrage (schéma + données de démonstration) |
+| `prisma/` | Schéma de données Prisma (**PostgreSQL Neon** — persistance réelle) |
+| `db/custom.db` | Base SQLite de repli hors ligne (mode dégradé) |
+| `src/lib/geo.ts` | **Moteur de triangulation** — trilatération Gauss-Newton (RSSI → distances, résidus, rayon d'incertitude) |
+| `src/app/api/v1/backoffice/` | **API back-office 3 espaces** : Système, GSM (opérateurs), Police (autorités) |
 | `public/` | **Identité visuelle** : favicons officiels (générés par RealFaviconGenerator depuis le logo bouclier GPS — `favicon.ico`, `favicon.svg`, `favicon-96x96.png`, `apple-touch-icon.png`, `web-app-manifest-192/512.png`, `site.webmanifest`), `og-image.png` (partage social 1200×630), logos sources (`Logo Albatros Protect en vol.png`, `Albatros aérien et bouclier GPS glossy.png`), `brand/` (assets optimisés pour l'UI) |
 | `download/albatros-protect-android/` | **App native Android** (Kotlin + Jetpack Compose), icônes launcher `res/mipmap-*` |
 | `download/albatros-protect-ios/` | **App native iOS** (Swift + SwiftUI) |
@@ -23,10 +25,17 @@ Prérequis : [Bun](https://bun.sh) (ou Node 20+ / npm).
 
 ```bash
 bun install                # installe les dépendances (+ prisma generate)
-cp .env.example .env       # DATABASE_URL=file:./db/custom.db
-bun run db:push            # applique le schéma à la base SQLite
+cp .env.example .env       # DATABASE_URL → PostgreSQL Neon (chaîne fournie)
+bun prisma/seed.ts         # (optionnel) données de démonstration Parakou
 bun run dev                # http://localhost:3000
 ```
+
+> **PostgreSQL Neon** : la base `Albatros Protect` (Neon, eu-central-1) héberge les 18 tables
+> du schéma — toutes les écritures sont **persistées durablement**. Le client Prisma passe par
+> l'adaptateur driver-adapter `pg` avec DNS IPv4-first (l'IPv6 de Neon n'est pas routé dans
+> certains réseaux). Pour appliquer une évolution du schéma depuis cet environnement :
+> `bun scripts/db_push_neon.ts` (génère le DDL hors-ligne via `prisma migrate diff`, puis
+> l'exécute via `pg`).
 
 Build de production local (sortie standalone) :
 
@@ -40,16 +49,37 @@ bun run start
 Le projet est **prêt pour Vercel, sans configuration requise** :
 
 1. Importer ce dépôt sur [vercel.com/new](https://vercel.com/new) (Framework : **Next.js** — détecté automatiquement).
-2. Aucune variable d'environnement n'est nécessaire au démarrage : sur l'environnement serverless, `src/lib/db.ts` copie automatiquement la base SQLite de démarrage vers `/tmp` (seul répertoire inscriptible) lors du premier démarrage de chaque instance.
+2. Définir `DATABASE_URL` (PostgreSQL Neon) dans les variables d'environnement du projet — **persistance réelle** : toutes les instances serverless partagent la même base.
 3. Déployer. Les routes `/api/v1/**` sont servies par les fonctions serverless Node.js.
 
-### ⚠️ Limites du mode pilote (SQLite éphémère)
+### Base de données — PostgreSQL Neon (persistance réelle)
 
-Sur l'infra serverless, chaque instance de fonction possède son propre `/tmp` : les écritures (comptes créés, incidents déclarés) **ne persistent pas entre les instances**. Convient à une démonstration ; pour la production :
+Le schéma est passé de SQLite (pilote éphémère) à **PostgreSQL managé (Neon)** : comptes,
+appareils, incidents, observations, demandes partenaires, journal d'audit et données du
+back-office sont **persistés durablement**. La chaîne de connexion utilise l'endpoint pooler
+(PgBouncer, transaction mode — adaptateur `pg`). Un repli SQLite reste disponible en mode
+dégradé hors ligne (`db/custom.db`).
 
-- **Turso** (libSQL, extension SQLite) : migration minimale depuis le schéma actuel ;
-- **Neon** ou **Supabase** (PostgreSQL managé) : changer `provider = "sqlite"` en `"postgresql"` dans `prisma/schema.prisma` puis `prisma db push` ;
-- puis définir `DATABASE_URL` dans les variables d'environnement du projet Vercel — le code l'utilisera telle quelle.
+### Back-office — trois espaces distincts (`#/back-office/<espace>`)
+
+| Espace | Rôles autorisés | Fonctions |
+|---|---|---|
+| **Système** (`#/back-office/systeme`) | `admin`, `support` | KPI plateforme, annuaire des comptes et gestion des rôles, supervision de tous les dossiers, journal d'audit consolidé, traitement des demandes RGPD |
+| **GSM** (`#/back-office/gsm`) | `gsm_operator`, `admin` | File des demandes opérateurs (suspension SIM, blocage IMEI, localisation réseau), **triangulation réseau** (moteur Gauss-Newton) avec carte des ancres, réponses notifiées dans la chronologie du propriétaire |
+| **Police** (`#/back-office/police`) | `police_officer`, `admin` | Dossiers de vol, enregistrement des références de plainte, transitions de statut (transmis / en enquête / clôturé), demandes IMEI aux autorités |
+
+Comptes de démonstration (OTP affiché à l'écran) :
+`admin@albatros.bj` (Système) · `gsm.mtn@albatros.bj` (GSM — MTN Bénin) ·
+`police.parakou@albatros.bj` (Police — Parakou) · `+22997000001` (citoyenne Awa Hounsou).
+
+### Triangulation Wi-Fi/cellulaire (moteur `src/lib/geo.ts`)
+
+Les estimations radio ne sont plus aléatoires : le serveur exécute une **trilatération par
+moindres carrés** (Gauss-Newton amorti) sur les distances déduites des RSSI (modèle
+log-distance : Wi-Fi n=2,7 ; cellulaire n=3,5), avec rayon d'incertitude issu des résidus
+réels — jamais de position fabriquée. La carte citoyen affiche le tracé complet (ancres,
+cercles de portée pointillés, position ± rayon) et l'espace GSM peut produire des positions
+« partenaire autorisé » via le même moteur.
 
 ### Structure de l'API (résumé)
 
@@ -60,11 +90,25 @@ GET    /api/v1/devices                    Appareils de l'utilisateur
 POST   /api/v1/incidents                  Déclaration d'incident (perte / vol)
 GET    /api/v1/incidents/:id/map          Observations de localisation rattachées
 POST   /api/v1/incidents/:id/partner-requests  Demandes aux opérateurs / autorités
-POST   /api/v1/observations/location|radio|ble  Remontées d'observations
+POST   /api/v1/observations/location|radio|ble  Remontées d'observations (radio = triangulation Gauss-Newton)
 GET    /api/v1/circles                    Cercles de confiance
 GET    /api/v1/consents                   Consentements (RGPD-like)
 GET    /api/v1/console/stats              Console support / opérateur
 GET    /api/v1/audit                      Journal d'audit
+
+# Back-office — 3 espaces (rôles dédiés requis)
+GET    /api/v1/backoffice/session                Espaces accessibles selon le rôle
+GET    /api/v1/backoffice/stats?space=…          KPI par espace (system | gsm | police)
+GET    /api/v1/backoffice/users                  Annuaire des comptes (Système)
+PATCH  /api/v1/backoffice/users/:id              Gestion des rôles (admin)
+GET    /api/v1/backoffice/incidents?space=…      Supervision des dossiers (Système, Police)
+PATCH  /api/v1/backoffice/incidents/:id          Transitions de statut + plaintes (Police)
+GET    /api/v1/backoffice/partner-requests       File SIM/IMEI/localisation (GSM, Police)
+PATCH  /api/v1/backoffice/partner-requests/:id   Traiter / transmettre / refuser (+ position réseau)
+POST   /api/v1/backoffice/triangulation          Localisation réseau autorisée (GSM)
+GET    /api/v1/backoffice/audit                  Journal d'audit consolidé (Système)
+GET    /api/v1/backoffice/privacy-requests       Demandes RGPD (Système)
+PATCH  /api/v1/backoffice/privacy-requests/:id   Traitement RGPD
 ```
 
 ## Spécifications sources

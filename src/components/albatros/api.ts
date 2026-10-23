@@ -73,7 +73,12 @@ export const api = {
   ingestLocation: (payload: Record<string, unknown>) =>
     req<{ observation: Observation }>("POST", "/observations/location", payload),
   radioEstimate: (deviceId: string, wifi: number, cell: number) =>
-    req<{ observation: Observation; quota_remaining_today: number; provider_note: string }>(
+    req<{
+      observation: Observation;
+      triangulation: import("./types").TriangulationOverlay;
+      quota_remaining_today: number;
+      provider_note: string;
+    }>(
       "POST", "/observations/radio", { device_id: deviceId, wifi_points: wifi, cell_towers: cell }),
   demoSimulate: (deviceId: string, action: string) =>
     req<{ observation?: Observation; unreachable?: boolean; message?: string }>(
@@ -131,4 +136,35 @@ export const api = {
     req<{ incident: ConsoleIncident }>("PATCH", `/console/incidents/${id}`, { status, note }),
   consoleStats: () => req<ConsoleStats>("GET", "/console/stats"),
   audit: () => req<{ events: AuditEntry[] }>("GET", "/audit"),
+
+  // ── Back-office (trois espaces : système, GSM, police) ──
+  boSession: () =>
+    req<{ user: SessionUser; spaces: import("./types").BoSpaceInfo[] }>("GET", "/backoffice/session"),
+  boStats: (space: string) =>
+    req<import("./types").BoStats>("GET", `/backoffice/stats?space=${space}`),
+  boUsers: (q?: string) =>
+    req<{ users: import("./types").BoUser[] }>("GET", `/backoffice/users${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  boUpdateUser: (id: string, payload: { role?: string; organization?: string }) =>
+    req<{ user: import("./types").BoUser }>("PATCH", `/backoffice/users/${id}`, payload),
+  boIncidents: (space: string, status?: string) =>
+    req<{ incidents: import("./types").BoIncident[] }>(
+      "GET", `/backoffice/incidents?space=${space}${status ? `&status=${status}` : ""}`),
+  boUpdateIncident: (id: string, payload: Record<string, unknown>) =>
+    req<{ incident: import("./types").BoIncident }>("PATCH", `/backoffice/incidents/${id}`, payload),
+  boPartnerRequests: (space: string) =>
+    req<{ requests: import("./types").BoPartnerRequest[] }>(
+      "GET", `/backoffice/partner-requests?space=${space}`),
+  boUpdatePartnerRequest: (id: string, payload: Record<string, unknown>) =>
+    req<{ request: import("./types").BoPartnerRequest; observation?: Observation | null }>(
+      "PATCH", `/backoffice/partner-requests/${id}`, payload),
+  boTriangulate: (incidentId: string, persist: boolean) =>
+    req<{ triangulation: import("./types").TriangulationOverlay; observation?: Observation | null }>(
+      "POST", "/backoffice/triangulation", { incident_id: incidentId, persist }),
+  boAudit: (limit = 60) =>
+    req<{ events: import("./types").BoAuditEntry[] }>("GET", `/backoffice/audit?limit=${limit}`),
+  boPrivacyRequests: () =>
+    req<{ requests: import("./types").BoPrivacyRequest[] }>("GET", "/backoffice/privacy-requests"),
+  boUpdatePrivacyRequest: (id: string, status: string, note?: string) =>
+    req<{ request: import("./types").BoPrivacyRequest }>(
+      "PATCH", `/backoffice/privacy-requests/${id}`, { status, note }),
 };

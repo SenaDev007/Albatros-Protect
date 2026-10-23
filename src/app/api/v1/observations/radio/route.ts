@@ -1,15 +1,17 @@
-// POST /api/v1/observations/radio — observations Wi-Fi/cellulaires minimales vers l'adaptateur
+// POST /api/v1/observations/radio — observations Wi-Fi/cellulaires vers l'adaptateur
 // Google Maps Platform Geolocation API (§7). En production : appel réel via la clé du backend.
-// Au pilote : adaptation simulée, avec coupe-circuit de quota et purge des entrées brutes.
+// Au pilote : triangulation réelle côté serveur (moteur src/lib/geo.ts — Gauss-Newton
+// sur les distances RSSI des antennes/points Wi-Fi), avec coupe-circuit de quota et
+// purge des entrées brutes.
 import { db } from "@/lib/db";
 import { requireUser, ok, apiFail, parseBody, logAudit } from "@/lib/api";
+import { runTriangulation, type RadioAnchor } from "@/lib/geo";
 
 // Compteur mémoire (pilotage du quota journalier — coupe-circuit §7.4)
 const globalQuota = globalThis as unknown as { __albatrosGeoCalls?: { date: string; count: number } };
 const DAILY_QUOTA = 40;
 
 const COTONOU = { lat: 9.3433, lng: 2.6089 };
-const jitter = (v: number, d: number) => v + (Math.random() - 0.5) * d;
 
 export async function POST(req: Request) {
   const user = await requireUser();
@@ -64,13 +66,25 @@ export async function POST(req: Request) {
     },
   });
 
-  // Réponse du fournisseur (simulée au pilote) : latitude/longitude + rayon d'incertitude
+  // Référence : dernière position connue (sinon centre du pilote)
   const last = await db.locationObservation.findFirst({
     where: { deviceId: device.id },
     orderBy: { capturedAt: "desc" },
   });
-  const base = last ? { lat: last.latitude, lng: last.longitude } : COTONOU;
-  const radius = Math.round(80 + Math.random() * 240);
+  const reference = last ? { lat: last.latitude, lng: last.longitude } : COTONOU;
+
+  // ── Triangulation réelle (moteur Gauss-Newton, src/lib/geo.ts) ──
+  const cellCount = Math.max(1, Math.min(6, cell || 2));
+  const wifiCount = Math.max(1, Math.min(6, wifi || 2));
+  let triangulation;
+  try {
+    triangulation = runTriangulation(reference, cellCount, wifiCount);
+  } catch {
+    return apiFail("GOOGLE_PROVIDER_UNAVAILABLE",
+      "Triangulation impossible avec ces observations : géométrie insuffisante.", 503);
+  }
+  const { point, accuracyRadiusM, residualRmsM, anchors, iterations, converged } = triangulation;
+  const radius = Math.round(accuracyRadiusM);
 
   let incidentId = body.incident_id ?? null;
   if (!incidentId) {
@@ -86,28 +100,42 @@ export async function POST(req: Request) {
       deviceId: device.id,
       incidentId,
       source: "google_geolocation",
-      latitude: jitter(base.lat, 0.004),
-      longitude: jitter(base.lng, 0.004),
+      latitude: point.lat,
+      longitude: point.lng,
       accuracyRadiusM: radius,
       capturedAt: new Date(),
       receivedAt: new Date(),
       mode: incidentId ? "incident" : "normal",
       quality: "approximate",
       radioObsId: radio.id,
-      note: `Estimation Wi-Fi/cellulaire — rayon ${radius} m. Entrées brutes purgées après traitement.`,
+      note:
+        `Estimation Wi-Fi/cellulaire par trilateration (${cellCount} antennes, ${wifiCount} points Wi-Fi) — ` +
+        `rayon ${radius} m, résidu RMS ${residualRmsM} m. Entrées brutes purgées après traitement.`,
     },
   });
 
   await logAudit({
     actorId: user.id, actorRole: user.role,
     action: "observation.radio_geolocation", objectType: "device", objectId: device.id,
-    reason: `Adaptateur Google Geolocation appelé (${wifi} Wi-Fi, ${cell} cell) — simulation pilote`,
+    reason: `Triangulation Gauss-Newton (${wifi} Wi-Fi, ${cell} cell, ${iterations} itérations) — simulation pilote`,
   });
   return ok({
     observation,
     radio_trace: { id: radio.id, purged: true, kept_summary: radio.payloadSummary },
+    triangulation: {
+      anchors: anchors.map((a: RadioAnchor) => ({
+        id: a.id, kind: a.kind, label: a.label,
+        lat: a.lat, lng: a.lng, rssi: a.rssi, distance_m: a.distanceM,
+      })),
+      center: { lat: point.lat, lng: point.lng },
+      accuracy_radius_m: radius,
+      residual_rms_m: residualRmsM,
+      iterations,
+      converged,
+      method: `Trilateration Gauss-Newton — ${anchors.length} ancres (${cellCount} antennes, ${wifiCount} Wi-Fi)`,
+    },
     provider_note:
-      "Pilote : réponse simulée côté serveur. En production, la clé Geolocation API reste côté backend, jamais embarquée dans un client.",
+      "Pilote : triangulation calculée côté serveur par le moteur interne. En production, la clé Geolocation API reste côté backend, jamais embarquée dans un client.",
     quota_remaining_today: Math.max(0, DAILY_QUOTA - q.count),
   }, 201);
 }

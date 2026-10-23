@@ -278,6 +278,31 @@ export function LandingView() {
               </ul>
             </div>
 
+            {/* Espaces professionnels */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground/70">Espaces professionnels</h4>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li>
+                  <a href="#/back-office/systeme" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Back-office Système
+                  </a>
+                </li>
+                <li>
+                  <a href="#/back-office/gsm" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Back-office GSM (opérateurs)
+                  </a>
+                </li>
+                <li>
+                  <a href="#/back-office/police" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Back-office Police (autorités)
+                  </a>
+                </li>
+                <li className="pt-1 text-[11px] leading-relaxed text-muted-foreground/70">
+                  Accès réservé aux comptes habilités (rôles dédiés).
+                </li>
+              </ul>
+            </div>
+
             {/* Légal & conformité */}
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground/70">Légal &amp; conformité</h4>

@@ -226,3 +226,109 @@ export interface ConsoleIncident {
   eventsCount: number;
   observationsCount: number;
 }
+
+// ── Triangulation Wi-Fi/cellulaire (moteur src/lib/geo.ts) ──
+
+export interface TriangulationAnchor {
+  id: string;
+  kind: "cell" | "wifi";
+  label: string;
+  lat: number;
+  lng: number;
+  rssi?: number;
+  distance_m: number;
+}
+
+export interface TriangulationOverlay {
+  anchors: TriangulationAnchor[];
+  center: { lat: number; lng: number };
+  accuracy_radius_m: number;
+  residual_rms_m: number;
+  iterations: number;
+  converged: boolean;
+  method: string;
+}
+
+// ── Back-office (trois espaces : système, GSM, police) ──
+
+export type BoSpace = "system" | "gsm" | "police";
+
+export interface BoSpaceInfo {
+  key: BoSpace;
+  label: string;
+  description: string;
+  accessible: boolean;
+}
+
+export interface BoStats {
+  space: BoSpace;
+  kpis: { key: string; label: string; value: number; hint?: string; tone?: string }[];
+}
+
+export interface BoUser {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  email: string | null;
+  role: string;
+  organization: string | null;
+  verifiedAt: string | null;
+  createdAt: string;
+  devicesCount?: number;
+  incidentsCount?: number;
+}
+
+export interface BoIncident {
+  id: string;
+  refNumber: string;
+  type: string;
+  status: string;
+  occurredAt: string;
+  declaredAt: string;
+  locationText: string;
+  policeReportRef: string | null;
+  observationsCount: number;
+  owner: { fullName: string; phone: string | null; email: string | null };
+  device: { deviceId: string; brand: string; model: string } | null;
+}
+
+export interface BoPartnerRequest {
+  id: string;
+  partnerType: string;
+  partnerName: string;
+  requestType: string;
+  motive: string;
+  status: string;
+  note: string | null;
+  responseNote: string | null;
+  transmittedAt: string | null;
+  processedAt: string | null;
+  createdAt: string;
+  incident: {
+    id: string; refNumber: string; type: string; status: string;
+    owner: { fullName: string; phone: string | null };
+    device: { deviceId: string; brand: string; model: string } | null;
+    identifiers: { type: string; value: string }[];
+  };
+}
+
+export interface BoAuditEntry {
+  id: string;
+  actorRole: string;
+  action: string;
+  objectType: string;
+  objectId: string | null;
+  result: string;
+  reason: string | null;
+  createdAt: string;
+  actor: { fullName: string } | null;
+}
+
+export interface BoPrivacyRequest {
+  id: string;
+  type: string;
+  details: string;
+  status: string;
+  createdAt: string;
+  user: { fullName: string; phone: string | null; email: string | null };
+}

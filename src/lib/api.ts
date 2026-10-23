@@ -52,6 +52,33 @@ export async function requireStaff() {
   return user.role === "support" || user.role === "admin" ? user : null;
 }
 
+// ── Back-office : espaces et rôles ──
+// Système : admin + support · GSM : gsm_operator + admin · Police : police_officer + admin
+export const BO_SPACES = {
+  system: { label: "Espace Système", roles: ["admin", "support"] },
+  gsm: { label: "Espace GSM (opérateurs)", roles: ["admin", "gsm_operator"] },
+  police: { label: "Espace Police (autorités)", roles: ["admin", "police_officer"] },
+} as const;
+
+export type BoSpaceKey = keyof typeof BO_SPACES;
+
+export function boSpacesForRole(role: string): BoSpaceKey[] {
+  return (Object.keys(BO_SPACES) as BoSpaceKey[]).filter((k) =>
+    (BO_SPACES[k].roles as readonly string[]).includes(role),
+  );
+}
+
+/** Utilisateur autorisé pour un espace back-office donné, sinon null. */
+export async function requireBoSpace(space: string) {
+  const user = await requireUser();
+  if (!user) return { user: null, space: null as BoSpaceKey | null };
+  const key = (["system", "gsm", "police"] as const).includes(space as BoSpaceKey)
+    ? (space as BoSpaceKey)
+    : null;
+  if (!key || !boSpacesForRole(user.role).includes(key)) return { user, space: null };
+  return { user, space: key };
+}
+
 export async function logAudit(entry: {
   actorId?: string | null;
   actorRole: string;

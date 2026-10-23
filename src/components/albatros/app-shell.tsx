@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard, Smartphone, ShieldCheck, Siren, Map, Users, Settings,
-  Terminal, LogOut, Menu, Sun, Moon, Bell, FileText, LifeBuoy, ClipboardList,
+  Terminal, LogOut, Menu, Sun, Moon, Bell, FileText, LifeBuoy, ClipboardList, Building2,
 } from "lucide-react";
 
 interface NavItem { view: View; label: string; icon: React.ComponentType<{ className?: string }>; staff?: boolean }
@@ -60,6 +60,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const { view, setView, user } = useAlbatros();
   const items = [...NAV_MAIN, ...NAV_SECONDARY];
   const isStaff = user?.role === "admin" || user?.role === "support";
+  const isBo = user?.role === "admin" || user?.role === "support"
+    || user?.role === "gsm_operator" || user?.role === "police_officer";
+  const boSpace = user?.role === "police_officer" ? "police" : user?.role === "gsm_operator" ? "gsm" : "system";
   const current = view === "incident" ? "incidents" : view;
   const button = (item: NavItem, secondary = false) => (
     <button
@@ -99,6 +102,19 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             }`}
           >
             <Terminal className="h-3.5 w-3.5" /> Console opérationnelle (démo)
+          </button>
+        </>
+      )}
+      {isBo && (
+        <>
+          <Separator className="my-2" />
+          <button
+            onClick={() => { setView("backoffice", { space: boSpace as "system" | "gsm" | "police" }); onNavigate?.(); }}
+            className={`flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
+              current === "backoffice" ? "bg-primary/10 text-primary" : "text-primary hover:bg-primary/10"
+            }`}
+          >
+            <Building2 className="h-3.5 w-3.5" /> Back-office · 3 espaces
           </button>
         </>
       )}
